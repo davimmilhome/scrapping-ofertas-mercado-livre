@@ -10,15 +10,15 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 # Globals
-produtos = [] # Lista de produtos
+produtos = []  # Lista de produtos
 
 # Instanciando e definindo configs navegador
 options = Options()
-options.add_argument('window-size=400,800') # Seta um tamanho de tela único
+options.add_argument('window-size=400,800')  # Seta um tamanho de tela único
 
 prod = 1
-if prod == 1: # Seta configurações de produção
-    options.add_argument('--headless') # Não exibe o navegador
+if prod == 1:  # Seta configurações de produção
+    options.add_argument('--headless')  # Não exibe o navegador
 
 navegador = webdriver.Firefox(options=options)
 
@@ -28,9 +28,9 @@ feita no finally, independete da ocorrencia de erros na execução
 """
 try:
     navegador.get('https://www.mercadolivre.com.br/ofertas')
-    sleep(1) # Espera a page carregar
+    sleep(1)  # Espera a page carregar
     page_content = navegador.page_source
-    site = BeautifulSoup(page_content, 'html.parser') # Convertendo em bs
+    site = BeautifulSoup(page_content, 'html.parser')  # Convertendo em bs
 
     # Setando elementos BS
     ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
@@ -56,8 +56,8 @@ try:
         vl_antigo_prod = item.find(
             's',
             attrs={
-                'class': 'andes-money-amount andes-money-amount-combo__previous-value andes-money-amount--previous andes-money-amount--cents-comma',}).text
-        vl_antigo_prod.replace('.','')
+                'class': 'andes-money-amount andes-money-amount-combo__previous-value andes-money-amount--previous andes-money-amount--cents-comma', }).text
+        vl_antigo_prod.replace('.', '')
         vl_antigo_prod.replace(' ', '')
         limite = vl_antigo_prod.find('reais')
         vl_antigo_prod = vl_antigo_prod[7:limite]
@@ -65,7 +65,7 @@ try:
 
         vl_atual_prod = item.find(
             'span', attrs={'class': 'andes-money-amount__fraction'}).text
-        vl_atual_prod = str(vl_atual_prod).replace('.','')
+        vl_atual_prod = str(vl_atual_prod).replace('.', '')
         vl_atual_prod = int(vl_atual_prod)
 
         descont_prod = 1 - (vl_atual_prod / vl_antigo_prod)
@@ -79,29 +79,28 @@ try:
         dessa forma, captar o link da imagem pode não ser 
         interessante
         """
-        #link_img_prod = item.find(
+        # link_img_prod = item.find(
         #    'img', attrs={'class': 'promotion-item__img'})['src']
 
-
-
         # O texto de produto da loja é > por nome da loja
+
         loja_prod = item.find(
             'span', attrs={'class': 'promotion-item__seller'})
         if loja_prod != None:
             loja_prod = loja_prod.text
-            loja_prod =  loja_prod[4:] # Tratamento para retirar 'por'
+            loja_prod = loja_prod[4:]  # Tratamento para retirar 'por'
 
         prazo_frete_prod = item.find(
             'span', attrs={'class': 'promotion-item__seller'})
 
         produto = {
-            'link_prod' : link_prod,
-            'nome_prod' : nome_prod,
-            'vl_antigo_prod' : vl_antigo_prod,
-            'vl_atual_prod' : vl_atual_prod,
-            'descont_prod' : descont_prod,
-            #'link_img_prod' : link_img_prod,
-            'loja_prod' : loja_prod,
+            'link_prod': link_prod,
+            'nome_prod': nome_prod,
+            'vl_antigo_prod': vl_antigo_prod,
+            'vl_atual_prod': vl_atual_prod,
+            'descont_prod': descont_prod,
+            # 'link_img_prod' : link_img_prod,
+            'loja_prod': loja_prod,
 
         }
         produtos.append(produto)
@@ -115,8 +114,6 @@ except:
 finally:
     navegador.quit()
 
-
 if __name__ == '__main__':
     print(produtos)
     print(f' Total de produtos captados: {len(produtos)}')
-
