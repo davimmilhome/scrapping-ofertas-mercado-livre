@@ -36,7 +36,14 @@ try:
     # Setando elementos BS
 
     ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
-    ofertas_li = ofertas_ol.findAll('li', attrs={'class': 'promotion-item sup'})
+    """
+    O código abaixo está captado todos os itens da lista (li).
+    Quando eu fiz pela primeira vez, estava selecionando por uma class
+    especifica, porém, essas classes são dinamicas.
+    """
+    ofertas_li = ofertas_ol.findAll('li')
+
+
 
     for idx, item in enumerate(ofertas_li):
 
@@ -54,26 +61,58 @@ try:
             's',
             attrs={
                 'class': 'andes-money-amount andes-money-amount-combo__previous-value andes-money-amount--previous andes-money-amount--cents-comma',}).text
-        vl_antigo_prod = vl_antigo_prod[6:11] # Tratamento
+        vl_antigo_prod.replace('.','')
+        vl_antigo_prod.replace(' ', '')
+        limite = vl_antigo_prod.find('reais')
+        vl_antigo_prod = vl_antigo_prod[7:limite]
         vl_antigo_prod = int(vl_antigo_prod)
 
         vl_atual_prod = item.find(
             'span', attrs={'class': 'andes-money-amount__fraction'}).text
-
+        vl_atual_prod = str(vl_atual_prod).replace('.','')
         vl_atual_prod = int(vl_atual_prod)
 
-        # descont_prod
-        # link_img_prod
-        # prazo_frete_prod
-        # loja_prod =
+        descont_prod = 1 - (vl_atual_prod / vl_antigo_prod)
+        descont_prod = round(descont_prod, 2)
+
+        """
+        No caso, o link da imagem é gerado juntaemnte com javascript
+        de forma assíncrona, então, quando a requisição é feita,
+        nem sempre a url da imagem é oferecida, mas sim uma URI
+        para ser feita a busca da imagem em uma fonte externa,
+        dessa forma, captar o link da imagem pode não ser 
+        interessante
+        """
+        #link_img_prod = item.find(
+        #    'img', attrs={'class': 'promotion-item__img'})['src']
+
+        #prazo_frete_prod =
+
+        # O texto de produto da loja é > por nome da loja
+        loja_prod = item.find(
+            'span', attrs={'class': 'promotion-item__seller'})
+        if loja_prod != None:
+            loja_prod = loja_prod.text
+            loja_prod =  loja_prod[4:] # Tratamento para retirar 'por'
+            
 
         produto = {
             'link_prod' : link_prod,
             'nome_prod' : nome_prod,
             'vl_antigo_prod' : vl_antigo_prod,
-            'vl_atual_prod' : vl_atual_prod
+            'vl_atual_prod' : vl_atual_prod,
+            'descont_prod' : descont_prod,
+            #'link_img_prod' : link_img_prod,
+            'loja_prod' : loja_prod,
+
         }
         produtos.append(produto)
+
+    # Saida para o json
+    with open('output/ofertas.json', 'w') as json_file:
+        json.dump(produtos, json_file)
+except:
+    raise
 
 finally:
     navegador.quit()
