@@ -44,3 +44,6 @@ build/
 *.json
 *.json5
 *.jsonl
+
+# Ignora arquivos executaveis (webdriver p/windows)
+*.exe
