@@ -1,5 +1,73 @@
 """
-Docstring inicial
+Este é um web crawler para capturar ofertas de produtos no site Mercado
+Livre.
+
+O código utiliza a biblioteca BeautifulSoup e Selenium para fazer a
+raspagem de dados do site. Ele acessa a página de ofertas do Mercado
+Livre, coleta informações como nome do produto, preço antigo, preço
+atual, desconto, link do produto e loja vendedora.
+
+Após a coleta, os dados são armazenados em uma lista de dicionários
+chamada 'produtos'. Em seguida, os dados são salvos em um arquivo
+JSON no diretório 'output/ofertas.json'.
+
+Instruções de uso:
+
+Certifique-se de ter as bibliotecas BeautifulSoup, Selenium
+e demais dependecias instaladas e configuradas, como webdriver.
+Execute o código para iniciar o web crawler.
+Aguarde a execução do crawler e verifique
+o arquivo 'output/ofertas.json' para ver os resultados.
+
+Contribuidores:
+Davi Milhome
+"""
+
+import json
+from time import sleep
+
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+Globals
+produtos = [] # Lista de produtos
+
+Instanciando e definindo configs navegador
+options = Options()
+options.add_argument('window-size=400,800') # Seta um tamanho de tela único
+
+prod = 1
+if prod == 1: # Seta configurações de produção
+options.add_argument('--headless') # Não exibe o navegador
+
+"""
+Observe que, o navegador precisa ser adaptado de acordo
+com a necessidade do projeto, nesse caso utiliza-se o
+firefox, porém, será necessário configurar isso em sua 
+máquina específica.
+"""
+navegador = webdriver.Firefox(options=options)
+
+"""
+Bloco Try utilizado abaixo para evitar crash, a saída do navegador será
+feita no finally, independentemente da ocorrência de erros na execução
+"""
+try:
+navegador.get('https://www.mercadolivre.com.br/ofertas')
+sleep(1) # Espera a página carregar
+page_content = navegador.page_source
+site = BeautifulSoup(page_content, 'html.parser') # Convertendo em bs
+
+bash
+Copy code
+# Setando elementos BS
+ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
+"""
+
+
+Stop generating
 """
 import json
 from time import sleep
