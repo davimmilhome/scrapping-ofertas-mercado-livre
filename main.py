@@ -31,16 +31,16 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-Globals
+#  Globals
 produtos = [] # Lista de produtos
 
-Instanciando e definindo configs navegador
+# Instanciando e definindo configs navegador
 options = Options()
 options.add_argument('window-size=400,800') # Seta um tamanho de tela único
 
 prod = 1
 if prod == 1: # Seta configurações de produção
-options.add_argument('--headless') # Não exibe o navegador
+    options.add_argument('--headless') # Não exibe o navegador
 
 """
 Observe que, o navegador precisa ser adaptado de acordo
@@ -53,46 +53,6 @@ navegador = webdriver.Firefox(options=options)
 """
 Bloco Try utilizado abaixo para evitar crash, a saída do navegador será
 feita no finally, independentemente da ocorrência de erros na execução
-"""
-try:
-navegador.get('https://www.mercadolivre.com.br/ofertas')
-sleep(1) # Espera a página carregar
-page_content = navegador.page_source
-site = BeautifulSoup(page_content, 'html.parser') # Convertendo em bs
-
-bash
-Copy code
-# Setando elementos BS
-ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
-"""
-
-
-Stop generating
-"""
-import json
-from time import sleep
-
-import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-
-# Globals
-produtos = []  # Lista de produtos
-
-# Instanciando e definindo configs navegador
-options = Options()
-options.add_argument('window-size=400,800')  # Seta um tamanho de tela único
-
-prod = 1
-if prod == 1:  # Seta configurações de produção
-    options.add_argument('--headless')  # Não exibe o navegador
-
-navegador = webdriver.Firefox(options=options)
-
-"""
-Bloco Try utilizado abaixo para evitar crash, a saida do navegador será
-feita no finally, independete da ocorrencia de erros na execução
 """
 try:
     navegador.get('https://www.mercadolivre.com.br/ofertas')
