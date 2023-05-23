@@ -10,7 +10,6 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 # Globals
-
 produtos = [] # Lista de produtos
 
 # Instanciando e definindo configs navegador
@@ -34,7 +33,6 @@ try:
     site = BeautifulSoup(page_content, 'html.parser') # Convertendo em bs
 
     # Setando elementos BS
-
     ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
     """
     O código abaixo está captado todos os itens da lista (li).
@@ -42,8 +40,6 @@ try:
     especifica, porém, essas classes são dinamicas.
     """
     ofertas_li = ofertas_ol.findAll('li')
-
-
 
     for idx, item in enumerate(ofertas_li):
 
@@ -86,7 +82,7 @@ try:
         #link_img_prod = item.find(
         #    'img', attrs={'class': 'promotion-item__img'})['src']
 
-        #prazo_frete_prod =
+
 
         # O texto de produto da loja é > por nome da loja
         loja_prod = item.find(
@@ -94,7 +90,9 @@ try:
         if loja_prod != None:
             loja_prod = loja_prod.text
             loja_prod =  loja_prod[4:] # Tratamento para retirar 'por'
-            
+
+        prazo_frete_prod = item.find(
+            'span', attrs={'class': 'promotion-item__seller'})
 
         produto = {
             'link_prod' : link_prod,
@@ -121,7 +119,4 @@ finally:
 if __name__ == '__main__':
     print(produtos)
     print(f' Total de produtos captados: {len(produtos)}')
-    #print(site.prettify()) # exibe o html
-    #print(ofertas_ol)
-    #print(ofertas_li)
 
