@@ -1,4 +1,5 @@
 import json
+import time
 from time import sleep
 from multiprocessing import Pool
 
@@ -16,6 +17,9 @@ def get_site_ML_content(pagina):
     :return: Objeto BeautifulSoup contendo o conteúdo da página.
     :rtype: BeautifulSoup
     """
+
+    start_time = time.time()
+
     options = Options()
     options.add_argument('window-size=400,800')
     options.add_argument('--headless')
@@ -32,8 +36,17 @@ def get_site_ML_content(pagina):
     finally:
         navegador.quit()
 
+        end_time = time.time()
+        execution_time = round(end_time - start_time,2)
+        print(
+         f'- [LOG]: Get realizado na page n° {pagina}\n'
+         f'- [LOG]: Tempo de execução da função get_site {execution_time}s\n'
+        )
+
 def process_page(pagina):
-    print(f'[LOG]: Página de oferta sendo consultada: {pagina}')
+
+    start_time = time.time()
+
     site = get_site_ML_content(pagina)
 
     ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
@@ -71,9 +84,18 @@ def process_page(pagina):
 
         if vl_antigo_prod:
             vl_antigo_prod = vl_antigo_prod.text
-            vl_antigo_prod = int(
+
+            """ 
+            As duas linhas abaixo no tratamento de valores antigos
+            tem a inteção de corrigir o texto disposto pelo ML
+            uma vez que o valor não vem separado do texto
+            """
+            vl_antigo_prod = (
                 vl_antigo_prod[7:vl_antigo_prod.find('reais')].replace('.', '')
             )
+            vl_antigo_prod = vl_antigo_prod[:vl_antigo_prod.find('reales')]
+            vl_antigo_prod = int(vl_antigo_prod)
+
             descont_prod = 1 - (vl_atual_prod_real / vl_antigo_prod)
             descont_prod = round(descont_prod, 2)
         else:
@@ -101,7 +123,14 @@ def process_page(pagina):
         """
         produtos[link_prod] = produto
 
+    end_time = time.time()
+    execution_time = round(end_time - start_time,2)
+    print(
+     f'- [LOG]: Página de oferta sofrendo scrapping: {pagina}\n'
+     f'- [LOG]: Tempo de execução da função process_page {execution_time}s\n'
+    )
     return produtos
+
 
 def scrapping_mercado_livre_ofertas(paginas=None, producao=False):
     """
@@ -115,6 +144,7 @@ def scrapping_mercado_livre_ofertas(paginas=None, producao=False):
     :type producao: bool, opcional
     :return: None
     """
+    start_time = time.time()
 
     if producao:
         if paginas:
@@ -132,9 +162,14 @@ def scrapping_mercado_livre_ofertas(paginas=None, producao=False):
         produtos.update(resultado)
 
     with open('output/ofertast.json', 'w') as json_file:
-        json.dump(produtos.values(), json_file)
+        json.dump(list(produtos.values()), json_file)
 
     print(f'Total de produtos captados: {len(produtos)}')
+    end_time = time.time()
+    execution_time = round(end_time - start_time,2)
+    print(
+     f'- [LOG]: Tempo de execução da função principal {execution_time}s\n'
+    )
 
 if __name__ == '__main__':
     scrapping_mercado_livre_ofertas(producao=True)
