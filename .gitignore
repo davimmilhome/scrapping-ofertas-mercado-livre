@@ -47,3 +47,7 @@ build/
 
 # Ignora arquivos executaveis (webdriver p/windows)
 *.exe
+
+# Ignora arquivos especificos utilizados para testes
+testes-file.py
+
