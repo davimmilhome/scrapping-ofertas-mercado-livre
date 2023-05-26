@@ -1,3 +1,13 @@
+"""
+Este módulo contém funções para realizar o scraping
+de ofertas no site Mercado Livre.
+Utiliza as bibliotecas Selenium e BeautifulSoup para
+obter o conteúdo HTML das páginas
+e extrair as informações dos produtos.
+
+Autor: Davi Milhome
+Data: 26/05/2023
+"""
 import json
 import time
 from time import sleep
@@ -10,8 +20,10 @@ from selenium.webdriver.firefox.options import Options
 
 def get_site_content(url,pagina):
     """
-    Obtém o conteúdo HTML de uma página específica do site Mercado Livre.
+    Obtém o conteúdo HTML de uma página
 
+    :param url: URL base do site.
+    :type url: str
     :param pagina: Número da página a ser acessada.
     :type pagina: int
     :return: Objeto BeautifulSoup contendo o conteúdo da página.
@@ -41,6 +53,15 @@ def get_site_content(url,pagina):
         )
 
 def process_page(pagina):
+    """
+      Processa uma página de ofertas e
+      retorna um dicionário de produtos.
+
+      :param pagina: Número da página a ser processada.
+      :type pagina: int
+      :return: Dicionário de produtos.
+      :rtype: dict
+      """
 
     start_time = time.time()
 
@@ -139,10 +160,10 @@ def scrapping_mercado_livre_ofertas(paginas=None, producao=False):
     Realiza o scraping de ofertas no site Mercado Livre.
 
     :param paginas: Número de páginas a serem consultadas.
-    Se não informado e producao=True, então paginas=20.
+            Se não informado e producao=True, então paginas=20.
     :type paginas: int, opcional em producao
     :param producao: Indica se está em modo de produção,
-    onde o número de páginas pode ser diferente, default é False.
+             onde o número de páginas pode ser diferente, default é False.
     :type producao: bool, opcional
     :return: None
     """
