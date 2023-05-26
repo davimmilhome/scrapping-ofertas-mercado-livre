@@ -1,6 +1,7 @@
 import json
 import os
 
+import pytest
 from pytest import mark
 from bs4 import BeautifulSoup
 
