@@ -8,7 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 
-def get_site_ML_content(pagina):
+def get_site_content(url,pagina):
     """
     Obtém o conteúdo HTML de uma página específica do site Mercado Livre.
 
@@ -25,10 +25,7 @@ def get_site_ML_content(pagina):
     options.add_argument('--headless')
     navegador = webdriver.Firefox(options=options)
     try:
-        navegador.get(
-            'https://www.mercadolivre.com.br/ofertas'
-            f'?container_id=MLB779362-1&page={pagina}'
-        )
+        navegador.get(url+str(pagina))
         sleep(1)  # Espera a página carregar
         page_content = navegador.page_source
         site_func = BeautifulSoup(page_content, 'html.parser')  # Objeto BS
@@ -47,7 +44,12 @@ def process_page(pagina):
 
     start_time = time.time()
 
-    site = get_site_ML_content(pagina)
+    url = (
+        'https://www.mercadolivre.com.br/ofertas'
+        '?container_id=MLB779362-1&page='
+    )
+
+    site = get_site_content(url,pagina)
 
     ofertas_ol = site.find('ol', attrs={'class': 'items_container'})
     ofertas_li = ofertas_ol.findAll('li')
@@ -161,7 +163,7 @@ def scrapping_mercado_livre_ofertas(paginas=None, producao=False):
     for resultado in resultados:
         produtos.update(resultado)
 
-    with open('output/ofertast.json', 'w') as json_file:
+    with open('output/ofertas.json', 'w') as json_file:
         json.dump(list(produtos.values()), json_file)
 
     print(f'Total de produtos captados: {len(produtos)}')
