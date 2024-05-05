@@ -2,12 +2,6 @@
 
 Esse é um webcrawler que extrai dados da página de ofertas do mercado livre (https://www.mercadolivre.com.br/ofertas). <br/>
 
-O programa principal entra nas n (default n = 20) páginas de oferta do mercado livre e extrai informações de cada conteirner de produto. <br/>
-
-## Funcionalidades
-No caso, o programa consulta a página de ofertas do mercado livre e extrai os dados definidos no código para um arquivo serializado de dados (JSON). <br/>
- 
-O arquivo pode ser exportado de maneira a alimentar uma base de dados a sua escolha.<br/>
 
 ## Como usar
 
@@ -32,10 +26,6 @@ Execute os testes unitários com o comando python -m  pytest -v -s -m output, te
 
 ## Tecnologias utilizadas
 Python, bibliotecas builtin e third party.
-
- - BeautifulSoup
- - Selenium com webdriver
- - Pytest
 
 ## Contribuindo
 Envie um e-mail para davimmilhome@gmail.com com sua intenção de contribuição que poderei avaliar.
