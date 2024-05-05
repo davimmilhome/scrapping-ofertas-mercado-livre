@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 
 from cfg import LoggingConfig
 
+from utils.enums import (
+    TypeOfDriver
+)
+
 LoggingConfig.default_setup_logging(
     file_handler_path="logs/DriverControllerLOG.txt",
     file_handler_mode="a",
@@ -29,11 +33,11 @@ class DriverController:
             + "DOWNLOAD_PATH: " + DriverController.__DOWNLOAD_PATH + "\n"
         ))
 
-        if DriverController.__TYPE_OF_DRIVER == "FIREFOX":
+        if DriverController.__TYPE_OF_DRIVER == TypeOfDriver.FIREFOX.value:
             options = DriverController.driver_cfg_firefox(headless)
             driver = webdriver.Firefox(options=options)
 
-        elif DriverController.__TYPE_OF_DRIVER == "CHROME":
+        elif DriverController.__TYPE_OF_DRIVER == TypeOfDriver.CHROME.value:
             options = DriverController.driver_cfg_chrome(headless)
             driver = webdriver.Chrome(DriverController.__DRIVER_PATH,options=options)
 

@@ -1,16 +1,19 @@
 import json
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
-
-from cfg import LoggingConfig
+from cfg import (
+    LoggingConfig
+)
 
 from parsers import (
     MLParser
 )
+
 LoggingConfig.default_setup_logging(
-    file_handler_path="logs/mainLOG.txt",
+    file_handler_path="logs/ML_scrapper.log",
     file_handler_mode="a",
 )
+
 logger = LoggingConfig.get_logger(logger__name__=__name__)
 
 
@@ -20,12 +23,11 @@ class MLScrapper:
 
     @staticmethod
     def ML_offer_pages_scrapper(output_path, number_of_pages=20):
-
-        with ThreadPoolExecutor() as executor:
-            thread_executor_results_list = list(executor.map(MLScrapper.get_page_result, range(1, number_of_pages + 1)))
+        with ProcessPoolExecutor() as executor:
+            process_executor_results_list = list(executor.map(MLScrapper.get_page_result, range(1, number_of_pages + 1)))
 
         pages_results = {}
-        for result in thread_executor_results_list:
+        for result in process_executor_results_list:
             pages_results.update(result)
 
         with open(output_path, 'w') as json_file:
@@ -38,4 +40,5 @@ class MLScrapper:
         return page_result
 
 if __name__ == '__main__':
+    MLScrapper.get_page_result(14)
     pass

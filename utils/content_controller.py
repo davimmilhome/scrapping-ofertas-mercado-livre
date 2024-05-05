@@ -8,7 +8,7 @@ from utils import (
 from cfg import LoggingConfig
 
 LoggingConfig.default_setup_logging(
-    file_handler_path="logs/content_controllerLOG.txt",
+    file_handler_path="logs/content_controller.log",
     file_handler_mode="a",
 )
 logger = LoggingConfig.get_logger(logger__name__=__name__)

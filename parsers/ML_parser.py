@@ -1,12 +1,14 @@
 from urllib.parse import urlparse, parse_qs
 
+
 from cfg import LoggingConfig
 from utils import (
-    ContentController
+    ContentController,
+    TimeUtils,
 )
 
 LoggingConfig.default_setup_logging(
-    file_handler_path="logs/mainLOG.txt",
+    file_handler_path="logs/ML_parser.log",
     file_handler_mode="a",
 )
 logger = LoggingConfig.get_logger(logger__name__=__name__)
@@ -28,7 +30,7 @@ class MLParser:
         if number_of_offer_page:
             number_of_offer_page = int(number_of_offer_page)
         else:
-            number_of_offer_page = 1  # Valor padrão se não houver número da
+            number_of_offer_page = None  # Valor padrão se não houver número da
 
 
         offers_ol = soup.find('ol', attrs={'class': 'items_container'})
@@ -57,12 +59,12 @@ class MLParser:
             )
             if actual_value_cents:
                 actual_value_cents = actual_value_cents.text
-                actual_value_real = (
+                actual_value = (
                         actual_value_text + '.' + actual_value_cents
                 )
-                actual_value_real = float(actual_value_real)
+                actual_value = float(actual_value)
             else:
-                actual_value_real = float(actual_value_text)
+                actual_value = float(actual_value_text)
 
             if previous_value:
                 previous_value = previous_value.text
@@ -74,10 +76,10 @@ class MLParser:
                 previous_value = (previous_value.replace('R$','').replace('.', ''))
                 previous_value = int(previous_value)
 
-                discount_prod = 1 - (actual_value_real / previous_value)
-                discount_prod = round(discount_prod, 2)
+                discount = 1 - (actual_value / previous_value)
+                discount = round(discount, 2)
             else:
-                discount_prod = None
+                discount = None
 
             store = item.find(
                 'span', attrs={'class': 'promotion-item__seller'}
@@ -89,11 +91,14 @@ class MLParser:
                 'product_link': product_link,
                 'product_name': product_name,
                 'previous_value': previous_value,
-                'actual_value_real': actual_value_real,
-                'discount_prod': discount_prod,
+                'actual_value': actual_value,
+                'discount': discount,
                 'store': store,
                 'number_of_offer_page': number_of_offer_page,
+                'market_place' : 'MERCADO LIVRE',
+                'timestamp': TimeUtils.get_current_iso_datetime(),
             }
+
             """
             armazenar as informações de cada product_dict
              individualmente no dicionário, 
