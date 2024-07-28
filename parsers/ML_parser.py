@@ -17,6 +17,9 @@ class MLParser:
     @staticmethod
     def ML_promotion_page_parser(ML_promotion_page_url):
 
+        ID_MARKETPLACE = '1'
+        scrapped_json = {}
+
         soup = ContentController.get_site_content(ML_promotion_page_url)
 
         logger.info("Iniciando parser pela página de promoção")
@@ -36,12 +39,10 @@ class MLParser:
         offers_ol = soup.find('ol', attrs={'class': 'items_container'})
         offers_li = offers_ol.findAll('li')
 
-        products_dict = {}
-
         for idx, item in enumerate(offers_li):
-            product_link = item.find(
+            link_offer = item.find(
                 'a', attrs={'class': 'promotion-item__link-container'})['href']
-            product_name = item.find(
+            name_product = item.find(
                 'p', attrs={'class': 'promotion-item__title'}).text
 
             previous_value = item.find(
@@ -50,21 +51,21 @@ class MLParser:
                                      'money-amount--cents-comma'}
             )
 
-            actual_value_text = item.find(
+            value_offer_text = item.find(
                 'span', attrs={'class': 'andes-money-amount__fraction'}).text
-            actual_value_text = actual_value_text.replace('.', '')
-            actual_value_cents = item.find(
+            value_offer_text = value_offer_text.replace('.', '')
+            value_offer_cents = item.find(
                 'span', attrs={'class': 'andes-money-amount__cents andes-money'
                                         '-amount__cents--superscript-24'}
             )
-            if actual_value_cents:
-                actual_value_cents = actual_value_cents.text
-                actual_value = (
-                        actual_value_text + '.' + actual_value_cents
+            if value_offer_cents:
+                value_offer_cents = value_offer_cents.text
+                value_offer = (
+                        value_offer_text + '.' + value_offer_cents
                 )
-                actual_value = float(actual_value)
+                value_offer = float(value_offer)
             else:
-                actual_value = float(actual_value_text)
+                value_offer = float(value_offer_text)
 
             if previous_value:
                 previous_value = previous_value.text
@@ -76,27 +77,30 @@ class MLParser:
                 previous_value = (previous_value.replace('R$','').replace('.', ''))
                 previous_value = int(previous_value)
 
-                discount = 1 - (actual_value / previous_value)
-                discount = round(discount, 2)
+                discout_offer_decimals = 1 - (value_offer / previous_value)
+                discout_offer_decimals = round(discout_offer_decimals, 2)
             else:
-                discount = None
+                discout_offer_decimals = None
 
-            store = item.find(
+            name_store = item.find(
                 'span', attrs={'class': 'promotion-item__seller'}
             )
-            if store:
-                store = store.text[4:]
+            if name_store:
+                name_store = name_store.text[4:]
 
-            product_dict = {
-                'product_link': product_link,
-                'product_name': product_name,
+            elif name_store == None:
+                name_store = "SEM LOJA NA PÁGINA"
+
+            single_offer_json = {
+                'link_offer': link_offer,
+                'name_product': name_product,
                 'previous_value': previous_value,
-                'actual_value': actual_value,
-                'discount': discount,
-                'store': store,
+                'value_offer': value_offer,
+                'discount_offer_decimals': discout_offer_decimals,
+                'name_store': name_store,
                 'number_of_offer_page': number_of_offer_page,
-                'market_place' : 'MERCADO LIVRE',
-                'timestamp': TimeUtils.get_current_iso_datetime(),
+                'id_makertplace' : ID_MARKETPLACE,
+                'date_time_offer': TimeUtils.get_current_iso_datetime(),
             }
 
             """
@@ -104,12 +108,12 @@ class MLParser:
              individualmente no dicionário, 
              usando o link do product_dict como chave.
             """
-            products_dict[product_link] = product_dict
+            scrapped_json[link_offer] = single_offer_json
 
-        return products_dict
+        return scrapped_json
 
 if __name__ == '__main__':
-    products_dict = MLParser.ML_promotion_page_parser(
+    dict = MLParser.ML_promotion_page_parser(
         ML_promotion_page_url="https://www.mercadolivre.com.br/ofertas?container_id=MLB779362-1&page=1")
 
-    print(products_dict)
+    print(dict)
