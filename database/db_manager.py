@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from database.models import Base
 from cfg import DbConfig
 
+
 class DBManager:
 
     database = None
@@ -14,7 +15,6 @@ class DBManager:
         self.database = database
         self._create_tables(database)
         self._get_specific_db_engine()
-
 
     def _get_engine(self, database):
 
@@ -53,12 +53,12 @@ class DBManager:
     def test_connection(self):
         with self.session_scope() as session:
             try:
-                session.execute(text('SELECT 1'))
+                session.execute(text("SELECT 1"))
                 print("Connection working")
             except Exception as e:
                 print(f"Error on connection to db: {e}")
 
-if __name__ == '__main__':
-    dbman = DBManager('database_1')
-    dbman.test_connection()
 
+if __name__ == "__main__":
+    dbman = DBManager("database_1")
+    dbman.test_connection()
