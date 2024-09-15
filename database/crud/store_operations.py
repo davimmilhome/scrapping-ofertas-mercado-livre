@@ -2,9 +2,7 @@ from database.utils import (
     IDCreator,
 )
 
-from utils import (
-    time_utils
-)
+from utils import time_utils
 
 from database.models import Store
 
@@ -35,22 +33,19 @@ class StoreOperations:
 
         with self.db_manager.session_scope() as session:
 
-            new_store = Store(
-                id_store = new_id,
-                name_store= name_store
-            )
+            new_store = Store(id_store=new_id, name_store=name_store)
             session.add(new_store)
 
         return new_id
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from database import DBManager
-    dbman = DBManager('database_1')
-    c = StoreOperations(dbman)
-    #print(c.is_name_product_exists('teste'))
-    #print(c.is_name_store_exists('teste_store'))
-    print(c.is_name_store_exists('produto_pythonico1'))
-    #print(c.is_name_store_exists('loja_pythonica_5'))
-    print(c.add_store('produto_pythonico1'))
 
+    dbman = DBManager("database_1")
+    c = StoreOperations(dbman)
+    # print(c.is_name_product_exists('teste'))
+    # print(c.is_name_store_exists('teste_store'))
+    print(c.is_name_store_exists("produto_pythonico1"))
+    # print(c.is_name_store_exists('loja_pythonica_5'))
+    print(c.add_store("produto_pythonico1"))

@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 import main
 
+
 @mark.smoke  # Classe smoke utilizada para testes obrigatorios
 def test_configuracao_webdriver():
     """
@@ -15,12 +16,13 @@ def test_configuracao_webdriver():
     Verifica se a função get_site_content() retorna um objeto
     BeautifulSoup ao obter o conteúdo de um site.
     """
-    url = 'https://google.com'
-    pagina = ''
+    url = "https://google.com"
+    pagina = ""
     site = main.get_site_content(url, pagina)
     assert isinstance(site, BeautifulSoup)
 
-@mark.smoke # Classe smoke utilizada para testes obrigatorios
+
+@mark.smoke  # Classe smoke utilizada para testes obrigatorios
 def test_disponibilidade_paginas_ML():
     """
      Testa a disponibilidade das páginas de ofertas no Mercado Livre.
@@ -31,13 +33,11 @@ def test_disponibilidade_paginas_ML():
     listar os itens de oferta. Se o elemento for encontrado, considera
     que a página está disponível e contém ofertas.
     """
-    url = (
-        'https://www.mercadolivre.com.br/ofertas'
-        '?container_id=MLB779362-1&page='
-    )
-    pagina = '1'
+    url = "https://www.mercadolivre.com.br/ofertas" "?container_id=MLB779362-1&page="
+    pagina = "1"
     site = main.get_site_content(url, pagina)
-    assert site.find('ol', attrs={'class': 'items_container'}) is not None
+    assert site.find("ol", attrs={"class": "items_container"}) is not None
+
 
 @mark.output  # Teste de integridade para o arquivo de saída
 def test_arquivo_json():
@@ -57,22 +57,23 @@ def test_arquivo_json():
     Se o arquivo não existir, o teste falhará e uma mensagem indicando
     a ausência do arquivo será exibida..
     """
-    if os.path.exists('output/ofertas.json'):
-        with open('output/ofertas.json', 'r') as json_file:
+    if os.path.exists("output/ofertas.json"):
+        with open("output/ofertas.json", "r") as json_file:
             data = json.load(json_file)
             assert isinstance(data, list)
             assert len(data) > 0
             for produto in data:
                 assert isinstance(produto, dict)
-                assert 'link_prod' in produto
-                assert 'nome_prod' in produto
-                assert 'vl_antigo_prod' in produto
-                assert 'vl_atual_prod_real' in produto
-                assert 'descont_prod' in produto
-                assert 'loja_prod' in produto
-                assert 'n_pagina_oferta' in produto
+                assert "link_prod" in produto
+                assert "nome_prod" in produto
+                assert "vl_antigo_prod" in produto
+                assert "vl_atual_prod_real" in produto
+                assert "descont_prod" in produto
+                assert "loja_prod" in produto
+                assert "n_pagina_oferta" in produto
     else:
         pytest.fail("[LOG]: Arquivo json não presente no diretorio")
+
 
 @mark.output  # Teste de integridade para o arquivo de saída
 def test_ordem_paginas_oferta():
@@ -85,8 +86,8 @@ def test_ordem_paginas_oferta():
     de oferta é igual ou maior que o número da
     página de oferta anterior.
     """
-    if os.path.exists('output/ofertas.json'):
-        with open('output/ofertas.json', 'r') as json_file:
+    if os.path.exists("output/ofertas.json"):
+        with open("output/ofertas.json", "r") as json_file:
             data = json.load(json_file)
             assert isinstance(data, list)
             assert len(data) > 0
@@ -95,9 +96,9 @@ def test_ordem_paginas_oferta():
             previous_page = None
             for produto in data:
                 assert isinstance(produto, dict)
-                assert 'n_pagina_oferta' in produto
+                assert "n_pagina_oferta" in produto
 
-                current_page = produto['n_pagina_oferta']
+                current_page = produto["n_pagina_oferta"]
                 if previous_page is not None:
                     assert current_page >= previous_page
 

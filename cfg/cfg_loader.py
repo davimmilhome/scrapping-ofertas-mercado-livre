@@ -1,5 +1,6 @@
 import os
 
+
 class CFGLoader:
 
     @staticmethod

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class TimeUtils:
     @staticmethod
     def get_current_iso_datetime():

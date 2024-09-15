@@ -9,7 +9,11 @@ from logging import FileHandler, StreamHandler
 CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Caminho para o diretório de logs, relativo à raiz do projeto
-ROOT_DIR = os.path.join(CONFIG_DIR, '..',)
+ROOT_DIR = os.path.join(
+    CONFIG_DIR,
+    "..",
+)
+
 
 class LoggingConfig:
 
@@ -20,13 +24,10 @@ class LoggingConfig:
 
         basicConfig(
             level=loggin_level,
-            encoding='utf-8',
-            format='%(asctime)s - [%(levelname)s]: - Executando arquivo: %(filename)s - LOG: %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S',
-            handlers=[
-                FileHandler(LOG_FILE_PATH, file_handler_mode),
-                StreamHandler()
-            ],
+            encoding="utf-8",
+            format="%(asctime)s - [%(levelname)s]: - Executando arquivo: %(filename)s - LOG: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            handlers=[FileHandler(LOG_FILE_PATH, file_handler_mode), StreamHandler()],
         )
 
     @staticmethod
@@ -37,5 +38,5 @@ class LoggingConfig:
         return logger
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logger = getLogger()

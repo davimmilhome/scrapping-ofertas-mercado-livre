@@ -5,9 +5,7 @@ from dotenv import load_dotenv
 
 from cfg import LoggingConfig
 
-from utils.enums import (
-    TypeOfDriver
-)
+from utils.enums import TypeOfDriver
 
 LoggingConfig.default_setup_logging(
     file_handler_path="logs/DriverControllerLOG.txt",
@@ -16,6 +14,8 @@ LoggingConfig.default_setup_logging(
 logger = LoggingConfig.get_logger(logger__name__=__name__)
 
 load_dotenv()
+
+
 class DriverController:
 
     __DRIVER_PATH = os.getenv("DRIVER_PATH")
@@ -26,12 +26,21 @@ class DriverController:
     def start_driver(headless=True):
 
         logger.info("Driver solicitado")
-        logger.info((
-            "Variáveis de execução: " + "\n"
-            + "DRIVER_PATH: " + DriverController.__DRIVER_PATH + "\n"
-            + "TYPE_OF_DRIVER: " + DriverController.__TYPE_OF_DRIVER + "\n"
-            + "DOWNLOAD_PATH: " + DriverController.__DOWNLOAD_PATH + "\n"
-        ))
+        logger.info(
+            (
+                "Variáveis de execução: "
+                + "\n"
+                + "DRIVER_PATH: "
+                + DriverController.__DRIVER_PATH
+                + "\n"
+                + "TYPE_OF_DRIVER: "
+                + DriverController.__TYPE_OF_DRIVER
+                + "\n"
+                + "DOWNLOAD_PATH: "
+                + DriverController.__DOWNLOAD_PATH
+                + "\n"
+            )
+        )
 
         if DriverController.__TYPE_OF_DRIVER == TypeOfDriver.FIREFOX.value:
             options = DriverController.driver_cfg_firefox(headless)
@@ -39,12 +48,11 @@ class DriverController:
 
         elif DriverController.__TYPE_OF_DRIVER == TypeOfDriver.CHROME.value:
             options = DriverController.driver_cfg_chrome(headless)
-            driver = webdriver.Chrome(DriverController.__DRIVER_PATH,options=options)
+            driver = webdriver.Chrome(DriverController.__DRIVER_PATH, options=options)
 
-        if (not driver):
+        if not driver:
             logger.info("Não foi possível iniciar o driver")
             raise RuntimeError
-
 
         logger.info("Driver retornado")
 
@@ -55,15 +63,18 @@ class DriverController:
         from selenium.webdriver.firefox.options import Options
 
         options = Options()
-        options.add_argument('window-size=400,800')
+        options.add_argument("window-size=400,800")
 
         if headless:
-            options.add_argument('--headless')
+            options.add_argument("--headless")
 
         options.set_preference("browser.download.folderList", 2)
         options.set_preference("browser.download.dir", DriverController.__DOWNLOAD_PATH)
         options.set_preference("browser.download.useDownloadDir", True)
-        options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf, application/octet-stream")
+        options.set_preference(
+            "browser.helperApps.neverAsk.saveToDisk",
+            "application/pdf, application/octet-stream",
+        )
 
         options.binary_location = DriverController.__DRIVER_PATH
 
@@ -74,16 +85,16 @@ class DriverController:
         from selenium.webdriver.chrome.options import Options
 
         options = Options()
-        options.add_argument('window-size=400,800')
+        options.add_argument("window-size=400,800")
 
         if headless:
-            options.add_argument('--headless')
+            options.add_argument("--headless")
 
         prefs = {
             "download.default_directory": DriverController.__DOWNLOAD_PATH,
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
+            "safebrowsing.enabled": True,
         }
 
         options.add_experimental_option("prefs", prefs)
@@ -91,5 +102,5 @@ class DriverController:
         return options
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     driver = DriverController.start_driver()
