@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.3.0
+    entry: black --check --diff
+    hooks:
+      - id: black
+        name: Black Formatter
+        files: .
+        language: python
+        types: [ python ]
+
+
