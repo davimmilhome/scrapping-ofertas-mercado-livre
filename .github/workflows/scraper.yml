@@ -30,7 +30,7 @@ jobs:
       # de datacenter quando a rota legada /ofertas é acessada diretamente.
       BASE_URL: https://www.mercadolivre.com.br/ofertas?isSparkleRedirect=true
       OUTPUT_PATH: output/offers.json
-      BROWSER: chrome
+      BROWSER: firefox
       HEADLESS: "true"
       TIMEOUT: "20"
       RETRIES: "2"
@@ -46,7 +46,7 @@ jobs:
       - name: Install scraper
         run: python -m pip install ".[postgres]"
       - name: Verify browser
-        run: google-chrome --version
+        run: firefox --version
       - name: Run scraper
         run: offers-spider --app-env production --pages "${{ inputs.pages || '1' }}"
       - name: Upload JSON snapshot
