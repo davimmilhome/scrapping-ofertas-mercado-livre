@@ -2,7 +2,10 @@
 
 import argparse
 import logging
+import os
+import time
 from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .browser import Browser
@@ -33,6 +36,11 @@ def main(argv=None) -> int:
         format="%(asctime)s %(levelname)s %(message)s",
     )
     repository = None
+    run_id = None
+    run_started = None
+    result = None
+    run_status = "failed"
+    run_error = None
     stage = "configuração"
     try:
         settings = Settings.from_env(args.env_file)
@@ -52,6 +60,25 @@ def main(argv=None) -> int:
         if not args.json_only:
             stage = "conexão e preparação do banco"
             repository = Repository(settings.database_url)
+            try:
+                repository.prune_runs(
+                    retention_days=settings.log_retention_days,
+                    stale_after_seconds=settings.max_runtime * 2,
+                )
+            except Exception:
+                logger.warning("Não foi possível aplicar a retenção dos logs de execução.")
+            run_started = time.monotonic()
+            workflow_run_id = os.getenv("GITHUB_RUN_ID")
+            workflow_run_attempt = os.getenv("GITHUB_RUN_ATTEMPT")
+            run_id = repository.start_run(
+                app_env=settings.app_env,
+                pages_requested=settings.pages,
+                max_duration_seconds=settings.max_runtime,
+                workflow_run_id=workflow_run_id,
+                workflow_run_attempt=int(workflow_run_attempt)
+                if workflow_run_attempt and workflow_run_attempt.isdigit()
+                else None,
+            )
         stage = "inicialização e coleta no navegador"
         with Browser(settings) as browser:
             result = collect(settings, browser)
@@ -59,6 +86,8 @@ def main(argv=None) -> int:
             logger.warning("%s", message)
         if not result.offers:
             logger.error("Nenhuma oferta válida; saída anterior preservada.")
+            run_status = "timed_out" if result.timed_out else "failed"
+            run_error = result.failures[0] if result.failures else "Nenhuma oferta válida."
             return 1
         if repository:
             stage = "gravação no banco"
@@ -77,12 +106,35 @@ def main(argv=None) -> int:
             len(result.rejected),
             output,
         )
+        run_status = (
+            "timed_out" if result.timed_out else ("succeeded" if result.complete else "partial")
+        )
+        run_error = result.failures[0] if result.failures else None
         return 0 if result.complete else 2
     except Exception as exc:
         logger.error("Falha na etapa %s (%s).", stage, type(exc).__name__)
+        run_error = f"{type(exc).__name__}: {str(exc).splitlines()[0][:900]}"
         if stage == "configuração" and isinstance(exc, ValueError):
             logger.error("%s", exc)
         return 1
     finally:
+        if repository is not None and run_id is not None:
+            finished_at = datetime.now(timezone.utc)
+            try:
+                repository.finish_run(
+                    run_id,
+                    status=run_status,
+                    finished_at=finished_at,
+                    duration_seconds=(time.monotonic() - run_started)
+                    if run_started is not None
+                    else 0,
+                    pages_ok=result.pages_ok if result is not None else 0,
+                    offers_found=len(result.offers) if result is not None else 0,
+                    failures_count=len(result.failures) if result is not None else 0,
+                    rejected_count=len(result.rejected) if result is not None else 0,
+                    error_summary=run_error,
+                )
+            except Exception:
+                logger.warning("Não foi possível finalizar o log da execução.")
         if repository is not None:
             repository.close()

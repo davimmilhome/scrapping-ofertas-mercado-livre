@@ -22,6 +22,7 @@ class Collection:
     pages_ok: int = 0
     failures: list[str] = field(default_factory=list)
     rejected: list[str] = field(default_factory=list)
+    timed_out: bool = False
 
     @property
     def complete(self):
@@ -38,9 +39,24 @@ def page_url(base_url: str, page: int) -> str:
 def collect(settings: Settings, fetcher: Fetcher) -> Collection:
     result = Collection()
     unique = {}
+    started = time.monotonic()
     for page in range(1, settings.pages + 1):
+        remaining = settings.max_runtime - (time.monotonic() - started)
+        if remaining <= 0:
+            result.timed_out = True
+            result.failures.append(
+                f"Tempo máximo da execução excedido ({settings.max_runtime:g}s)."
+            )
+            break
         if page > 1:
-            time.sleep(settings.request_delay)
+            time.sleep(min(settings.request_delay, remaining))
+            remaining = settings.max_runtime - (time.monotonic() - started)
+            if remaining <= 0:
+                result.timed_out = True
+                result.failures.append(
+                    f"Tempo máximo da execução excedido ({settings.max_runtime:g}s)."
+                )
+                break
         try:
             html = fetcher.fetch(page_url(settings.base_url, page))
             parsed = parse_html(
@@ -53,6 +69,12 @@ def collect(settings: Settings, fetcher: Fetcher) -> Collection:
             result.rejected.extend(parsed.errors)
             for offer in parsed.offers:
                 unique.setdefault((offer.marketplace, offer.listing_id), offer)
+            if time.monotonic() - started > settings.max_runtime:
+                result.timed_out = True
+                result.failures.append(
+                    f"Tempo máximo da execução excedido ({settings.max_runtime:g}s)."
+                )
+                break
         except (FetchError, ParseError, OSError) as exc:
             detail = str(exc).splitlines()
             result.failures.append(

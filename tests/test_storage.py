@@ -1,6 +1,6 @@
 import json
 from dataclasses import replace
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -88,5 +88,40 @@ def test_offsets_are_normalized_before_upsert(offers):
         repo.save([original])
         assert repo.rows()[0]["price"] == Decimal("800.00")
         assert repo.rows()[0]["collected_at"].hour == 13
+    finally:
+        repo.close()
+
+
+def test_collection_run_log_and_retention(tmp_path):
+    repo = Repository(f"sqlite:///{tmp_path / 'runs.sqlite3'}")
+    now = datetime.now(timezone.utc)
+    try:
+        current = repo.start_run(
+            app_env="test",
+            pages_requested=2,
+            max_duration_seconds=300,
+            started_at=now,
+        )
+        repo.finish_run(
+            current,
+            status="succeeded",
+            finished_at=now + timedelta(seconds=2),
+            duration_seconds=2,
+            pages_ok=2,
+            offers_found=4,
+        )
+        old = repo.start_run(
+            app_env="test",
+            pages_requested=1,
+            max_duration_seconds=300,
+            started_at=now - timedelta(days=3),
+        )
+        assert old != current
+        assert repo.prune_runs(retention_days=2, stale_after_seconds=600, now=now) == 1
+        rows = repo.run_rows()
+        assert len(rows) == 1
+        assert rows[0]["run_id"] == current
+        assert rows[0]["status"] == "succeeded"
+        assert rows[0]["offers_found"] == 4
     finally:
         repo.close()

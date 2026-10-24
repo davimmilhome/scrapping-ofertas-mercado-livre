@@ -23,6 +23,8 @@ PAGES=1
 TIMEOUT=20
 RETRIES=2
 REQUEST_DELAY=1
+MAX_RUNTIME=300
+LOG_RETENTION_DAYS=30
 ```
 
 `APP_ENV=production` exige PostgreSQL e HTTPS. Rotacione a senha do banco e os
@@ -40,6 +42,7 @@ GRANT CONNECT ON DATABASE <banco> TO <usuario_app>;
 GRANT USAGE ON SCHEMA public TO <usuario_app>;
 GRANT SELECT, INSERT, UPDATE ON TABLE offer_snapshots TO <usuario_app>;
 GRANT USAGE, SELECT ON SEQUENCE offer_snapshots_id_seq TO <usuario_app>;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE collection_runs TO <usuario_app>;
 ```
 
 O tráfego para um PostgreSQL remoto deve usar TLS (`sslmode=require` no mínimo,
@@ -67,3 +70,7 @@ Nunca inclua a URL com senha em logs; use a variável injetada pelo secret manag
 - Restrinja egress quando possível; o navegador deve acessar apenas os domínios
   necessários para a coleta.
 - Monitore falhas, tempo de execução, volume de ofertas e crescimento do banco.
+
+As métricas operacionais ficam na tabela `collection_runs`, sem HTML, cookies ou
+credenciais. `LOG_RETENTION_DAYS` limita o crescimento dessa tabela e
+`MAX_RUNTIME` encerra a paginação quando o orçamento de execução é atingido.

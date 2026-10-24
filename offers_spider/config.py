@@ -12,6 +12,7 @@ MAX_PAGES = 100
 MAX_TIMEOUT = 300
 MAX_RETRIES = 5
 MAX_REQUEST_DELAY = 60
+MAX_LOG_RETENTION_DAYS = 365
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,8 @@ class Settings:
     timeout: float = 20
     retries: int = 2
     request_delay: float = 1
+    max_runtime: float = 300
+    log_retention_days: int = 30
     driver_path: str | None = None
 
     def __post_init__(self):
@@ -40,12 +43,18 @@ class Settings:
             or self.retries > MAX_RETRIES
             or self.request_delay < 0
             or self.request_delay > MAX_REQUEST_DELAY
+            or self.max_runtime <= 0
+            or self.max_runtime > MAX_TIMEOUT
+            or self.log_retention_days < 1
+            or self.log_retention_days > MAX_LOG_RETENTION_DAYS
             or not math.isfinite(self.timeout)
             or not math.isfinite(self.request_delay)
+            or not math.isfinite(self.max_runtime)
         ):
             raise ValueError(
                 "PAGES entre 1 e 100, TIMEOUT entre 0 e 300, RETRIES entre 0 e 5 "
-                "e REQUEST_DELAY entre 0 e 60."
+                "REQUEST_DELAY entre 0 e 60, MAX_RUNTIME entre 0 e 300 "
+                "e LOG_RETENTION_DAYS entre 1 e 365."
             )
         if self.browser not in {"chrome", "firefox"}:
             raise ValueError("BROWSER deve ser chrome ou firefox.")
@@ -79,5 +88,7 @@ class Settings:
             timeout=float(os.getenv("TIMEOUT", "20")),
             retries=int(os.getenv("RETRIES", "2")),
             request_delay=float(os.getenv("REQUEST_DELAY", "1")),
+            max_runtime=float(os.getenv("MAX_RUNTIME", "300")),
+            log_retention_days=int(os.getenv("LOG_RETENTION_DAYS", "30")),
             driver_path=os.getenv("DRIVER_PATH") or None,
         )

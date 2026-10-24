@@ -52,6 +52,8 @@ Em `development` e `test`, SQLite é o padrão para desenvolvimento local e test
 | TIMEOUT | 20 | Limite de navegação e espera por cartões, de 0 a 300 segundos |
 | RETRIES | 2 | Tentativas adicionais por página, de 0 a 5 |
 | REQUEST_DELAY | 1 | Intervalo entre páginas, de 0 a 60 segundos |
+| MAX_RUNTIME | 300 | Limite total da coleta, de 1 a 300 segundos |
+| LOG_RETENTION_DAYS | 30 | Dias de retenção dos logs de execução, de 1 a 365 |
 | DRIVER_PATH | vazio | Executável chromedriver/geckodriver; não é o executável do navegador |
 
 Para PostgreSQL:
@@ -79,7 +81,11 @@ postgresql://usuario:senha@ep-exemplo.us-east-2.aws.neon.tech/ofertas?sslmode=re
 ```
 
 Não coloque essa URL em arquivos versionados, logs ou parâmetros de linha de
-comando. A primeira execução cria a tabela `offer_snapshots` automaticamente.
+comando. A primeira execução cria as tabelas `offer_snapshots` e
+`collection_runs` automaticamente. `collection_runs` guarda métricas
+operacionais (status, duração, páginas, ofertas e falha resumida), sem HTML,
+cookies, tokens ou dados pessoais. Registros antigos seguem
+`LOG_RETENTION_DAYS`.
 Para validar a conexão sem esperar o cron, use **Run workflow** na aba Actions
 e acompanhe o artifact e os logs da execução.
 
@@ -142,6 +148,10 @@ Os logs no terminal mostram etapa, contagens e rejeições. Em coleta parcial,
 as ofertas válidas são persistidas e exportadas em `offers.partial.json`,
 preservando `offers.json`. Sem ofertas válidas, arquivos anteriores são
 preservados. A escrita do JSON usa substituição atômica.
+
+`MAX_RUNTIME` é verificado antes de cada página e depois de cada carregamento.
+Quando atingido, a execução é marcada como `timed_out` e os resultados válidos
+são tratados como coleta parcial.
 
 Banco e arquivo não compartilham uma transação: se a exportação falhar depois
 do commit, o banco já estará atualizado. A execução retorna 1; repetir a coleta
