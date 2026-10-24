@@ -1,3 +1,4 @@
+import time
 from urllib.parse import parse_qs, urlsplit
 
 from offers_spider.browser import FetchError
@@ -14,6 +15,16 @@ class FakeFetcher:
         if isinstance(response, Exception):
             raise response
         return response
+
+
+class SlowFetcher:
+    def __init__(self, response, delay):
+        self.response = response
+        self.delay = delay
+
+    def fetch(self, url):
+        time.sleep(self.delay)
+        return self.response
 
 
 def test_page_url_preserves_filters():
@@ -53,3 +64,13 @@ def test_rejected_card_marks_partial(html):
     assert len(result.offers) == 2
     assert not result.complete
     assert len(result.rejected) == 1
+
+
+def test_collection_stops_after_max_runtime(html):
+    result = collect(
+        Settings(pages=2, request_delay=0, max_runtime=0.001),
+        SlowFetcher(html, delay=0.01),
+    )
+    assert result.timed_out
+    assert result.pages_ok == 1
+    assert not result.complete

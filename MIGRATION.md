@@ -1,5 +1,18 @@
 # Migração para 0.2
 
+## Registro de execuções e limite de tempo
+
+A partir desta versão, a inicialização cria a tabela `collection_runs` junto
+com `offer_snapshots`. Ela registra status, duração, limite aplicado, contagens
+de páginas/ofertas e um resumo curto da falha. A aplicação remove registros
+antigos conforme `LOG_RETENTION_DAYS` (padrão de 30 dias) e marca execuções
+interrompidas como `abandoned` antes da limpeza.
+
+`MAX_RUNTIME` limita a duração lógica da coleta entre 1 e 300 segundos. Ao
+atingir o limite, a paginação é interrompida e a execução termina como
+`timed_out` ou coleta parcial. Nenhuma migração manual é necessária: o
+SQLAlchemy cria a nova tabela em bancos existentes.
+
 ## Código e execução
 
 O pacote `offers_spider` substitui `cfg`, `controllers`, `database`,

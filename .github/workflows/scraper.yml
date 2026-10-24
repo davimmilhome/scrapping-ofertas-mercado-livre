@@ -22,7 +22,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 8
     env:
       APP_ENV: production
       DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
@@ -35,6 +35,8 @@ jobs:
       TIMEOUT: "20"
       RETRIES: "2"
       REQUEST_DELAY: "1"
+      MAX_RUNTIME: "300"
+      LOG_RETENTION_DAYS: "30"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -28,6 +28,9 @@ def test_full_flow_and_repeat(monkeypatch, tmp_path, html):
     repo = Repository(settings.database_url)
     try:
         assert len(repo.rows()) == 2
+        runs = repo.run_rows()
+        assert len(runs) == 2
+        assert all(run["status"] == "succeeded" for run in runs)
     finally:
         repo.close()
 

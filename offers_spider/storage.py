@@ -3,8 +3,9 @@
 import json
 import os
 import tempfile
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 from sqlalchemy import (
     Column,
@@ -17,7 +18,10 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
     create_engine,
+    delete,
+    or_,
     select,
+    update,
 )
 from sqlalchemy.engine import make_url
 
@@ -39,6 +43,27 @@ snapshots = Table(
     Column("page", Integer, nullable=False),
     Column("collected_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("marketplace", "listing_id", "observed_on", name="uq_offer_daily"),
+)
+
+collection_runs = Table(
+    "collection_runs",
+    metadata,
+    Column("run_id", String(32), primary_key=True),
+    Column("status", String(16), nullable=False),
+    Column("app_env", String(16), nullable=False),
+    Column("runner", String(32), nullable=False),
+    Column("started_at", DateTime(timezone=True), nullable=False),
+    Column("finished_at", DateTime(timezone=True)),
+    Column("duration_seconds", Numeric(12, 3)),
+    Column("max_duration_seconds", Numeric(12, 3), nullable=False),
+    Column("pages_requested", Integer, nullable=False),
+    Column("pages_ok", Integer, nullable=False, default=0),
+    Column("offers_found", Integer, nullable=False, default=0),
+    Column("failures_count", Integer, nullable=False, default=0),
+    Column("rejected_count", Integer, nullable=False, default=0),
+    Column("error_summary", String(1000)),
+    Column("workflow_run_id", String(128)),
+    Column("workflow_run_attempt", Integer),
 )
 
 
@@ -103,6 +128,106 @@ class Repository:
                 )
                 connection.execute(statement)
         return len(offers)
+
+    def start_run(
+        self,
+        *,
+        app_env: str,
+        pages_requested: int,
+        max_duration_seconds: float,
+        runner: str = "selenium",
+        workflow_run_id: str | None = None,
+        workflow_run_attempt: int | None = None,
+        started_at: datetime | None = None,
+    ) -> str:
+        started_at = started_at or datetime.now(timezone.utc)
+        run_id = uuid4().hex
+        with self.engine.begin() as connection:
+            connection.execute(
+                collection_runs.insert().values(
+                    run_id=run_id,
+                    status="running",
+                    app_env=app_env,
+                    runner=runner,
+                    started_at=started_at,
+                    max_duration_seconds=max_duration_seconds,
+                    pages_requested=pages_requested,
+                    pages_ok=0,
+                    offers_found=0,
+                    failures_count=0,
+                    rejected_count=0,
+                    workflow_run_id=workflow_run_id,
+                    workflow_run_attempt=workflow_run_attempt,
+                )
+            )
+        return run_id
+
+    def finish_run(
+        self,
+        run_id: str,
+        *,
+        status: str,
+        finished_at: datetime,
+        duration_seconds: float,
+        pages_ok: int = 0,
+        offers_found: int = 0,
+        failures_count: int = 0,
+        rejected_count: int = 0,
+        error_summary: str | None = None,
+    ) -> None:
+        if status not in {"succeeded", "partial", "failed", "timed_out", "abandoned"}:
+            raise ValueError("Status de execução inválido.")
+        with self.engine.begin() as connection:
+            connection.execute(
+                update(collection_runs)
+                .where(collection_runs.c.run_id == run_id)
+                .values(
+                    status=status,
+                    finished_at=finished_at,
+                    duration_seconds=duration_seconds,
+                    pages_ok=pages_ok,
+                    offers_found=offers_found,
+                    failures_count=failures_count,
+                    rejected_count=rejected_count,
+                    error_summary=(error_summary or None)[:1000] if error_summary else None,
+                )
+            )
+
+    def prune_runs(
+        self,
+        *,
+        retention_days: int,
+        stale_after_seconds: float,
+        now: datetime | None = None,
+    ) -> int:
+        now = now or datetime.now(timezone.utc)
+        retention_cutoff = now - timedelta(days=retention_days)
+        stale_cutoff = now - timedelta(seconds=stale_after_seconds)
+        with self.engine.begin() as connection:
+            result = connection.execute(
+                delete(collection_runs).where(
+                    or_(
+                        collection_runs.c.finished_at < retention_cutoff,
+                        (
+                            collection_runs.c.finished_at.is_(None)
+                            & (collection_runs.c.started_at < retention_cutoff)
+                        ),
+                    ),
+                )
+            )
+            connection.execute(
+                update(collection_runs)
+                .where(
+                    collection_runs.c.status == "running",
+                    collection_runs.c.started_at < stale_cutoff,
+                )
+                .values(status="abandoned", finished_at=now)
+            )
+        return result.rowcount or 0
+
+    def run_rows(self):
+        with self.engine.connect() as connection:
+            return [dict(row) for row in connection.execute(select(collection_runs)).mappings()]
 
     def rows(self):
         with self.engine.connect() as connection:
