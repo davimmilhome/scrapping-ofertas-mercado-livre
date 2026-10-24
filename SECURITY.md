@@ -43,11 +43,16 @@ ou abuso do site coletado.
 ## Controles de produção
 
 As instruções executáveis de deploy, menor privilégio, TLS, backup, restauração
-e isolamento estão em [docs/production.md](docs/production.md). Ainda é
-necessário aplicar no ambiente de execução:
+e isolamento estão em [docs/production.md](docs/production.md). O GitHub já está
+protegido em `develop` e `main` com:
 
-- branch protection, revisão obrigatória e checks obrigatórios em `develop` e
-  `main`;
+- PR obrigatório com uma aprovação de usuário com permissão de escrita;
+- checks `test (3.11)`, `test (3.12)`, `test (3.13)`, `dependency-audit` e
+  `secret-scan`;
+- resolução de conversas e proibição de bypass, force push e exclusão.
+
+Ainda é necessário aplicar no ambiente de execução:
+
 - um gerenciador de segredos, PostgreSQL com TLS, backups e testes de restauração;
 - usuário de sistema sem privilégios e limites de CPU, memória e tempo.
 
