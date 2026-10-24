@@ -1,55 +1,23 @@
-#Ignore all setup variables to connect DBAPI
+.env
 *.env
-
-# Arquivos gerados pelo PyCharm
-.idea/
-*.iml
-
-# Arquivos gerados pelo ambiente virtual
-env/
-venv/
-virtualenv/
 .venv/
-.python-version
-
-# Arquivos de compilação e build
+venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.so
+*.py[cod]
 *.egg-info/
 dist/
 build/
-*.egg
-
-# Arquivos de log e cache
-*.log
-*.cache
-*.swp
-*.swo
-
-# Outros arquivos que não devem ser versionados
-*.pydevproject
-.DS_Store
+.pytest_cache/
+.ruff_cache/
 .coverage
-.tox/
-
-# Arquivos de dados
-*.TXT
-*.txt
-*.xlsx
-*.csv
-*.txt
-*.json
-*.json5
-*.jsonl
-
-# Ignora arquivos executaveis (webdriver p/windows)
+htmlcov/
+.idea/
+.vscode/
+logs/*
+!logs/.gitkeep
+output/*
+!output/.gitkeep
+*.sqlite3
+*.sqlite3-*
 *.exe
-
-# Ignora arquivos especificos utilizados para testes
-testes-file.py
-
-# Ignora arquivos PBIX
-*.pbix
+se-metadata.json
