@@ -45,7 +45,7 @@ Em `development` e `test`, SQLite é o padrão para desenvolvimento local e test
 | APP_ENV | development | development, test, staging ou production |
 | DATABASE_URL | sqlite:///output/offers.sqlite3 | SQLite ou postgresql+psycopg |
 | OUTPUT_PATH | output/offers.json | Exportação da execução |
-| BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados |
+| BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados. Em produção, a Action usa a variante `?isSparkleRedirect=true` para reduzir respostas de erro de IPs de datacenter. |
 | PAGES | 1 | Páginas de 1 até 100 |
 | BROWSER | firefox | chrome ou firefox |
 | HEADLESS | true | false para mostrar navegador |
