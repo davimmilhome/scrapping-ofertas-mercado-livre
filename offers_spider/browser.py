@@ -38,14 +38,22 @@ class Browser:
             factory = webdriver.Firefox
             headless = "-headless"
         options = Options()
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-background-networking")
+        options.add_argument("--disable-sync")
         if self.settings.headless:
             options.add_argument(headless)
+        if self.settings.browser == "firefox":
+            options.set_preference("browser.download.useDownloadDir", False)
+            options.set_preference("browser.helperApps.alwaysAsk.force", True)
+            options.set_preference("dom.disable_open_during_load", True)
         kwargs = {"options": options}
         if self.settings.driver_path:
             kwargs["service"] = Service(executable_path=self.settings.driver_path)
         self.driver = factory(**kwargs)
         try:
             self.driver.set_page_load_timeout(self.settings.timeout)
+            self.driver.set_script_timeout(self.settings.timeout)
         except Exception:
             self.driver.quit()
             raise

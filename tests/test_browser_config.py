@@ -20,11 +20,26 @@ from offers_spider.config import Settings
         {"base_url": "file:///tmp/x"},
         {"timeout": float("nan")},
         {"app_env": "production", "database_url": "sqlite:///output/prod.sqlite3"},
+        {"pages": 101},
+        {"timeout": 301},
+        {"retries": 6},
+        {"request_delay": 61},
+        {"app_env": "production", "base_url": "http://example.com"},
+        {"app_env": "production", "database_url": "mysql://user:pass@db/offers"},
     ],
 )
 def test_invalid_configuration(settings):
     with pytest.raises(ValueError):
         replace(Settings(), **settings)
+
+
+def test_production_accepts_postgresql_and_https():
+    settings = Settings(
+        app_env="production",
+        database_url="postgresql+psycopg://user:pass@db/offers",
+        base_url="https://www.mercadolivre.com.br/ofertas",
+    )
+    assert settings.app_env == "production"
 
 
 @pytest.mark.parametrize("browser_name", ["chrome", "firefox"])
@@ -38,6 +53,8 @@ def test_driver_lifecycle_and_service(browser_name):
             with Browser(settings) as browser:
                 assert browser.fetch("https://example.com") == "<html>ok</html>"
             wait.return_value.until.assert_called_once()
+            driver.set_page_load_timeout.assert_called_once_with(settings.timeout)
+            driver.set_script_timeout.assert_called_once_with(settings.timeout)
             assert create.call_args.kwargs["service"].path == "driver.exe"
     driver.quit.assert_called_once()
 

@@ -10,7 +10,7 @@ O projeto usa GitFlow simplificado:
 3. Faça commits pequenos, com mensagens no padrão Conventional Commits.
 4. Execute a suíte local e revise o diff.
 5. Abra um Pull Request da branch para `develop`.
-6. Aguarde CI verde e revisão; corrija os comentários na mesma branch.
+6. Aguarde CI verde e revisão quando houver outro revisor disponível; corrija os comentários na mesma branch.
 7. Faça merge pelo GitHub. Não faça push direto em `develop`.
 
 `main` recebe apenas PRs de release ou hotfix aprovados. Branches de trabalho
@@ -46,6 +46,9 @@ Os testes padrão não acessam o Mercado Livre. A coleta ao vivo deve ser uma
 verificação manual e controlada, usando poucas páginas e respeitando os limites
 do site. O teste PostgreSQL é opt-in com `TEST_DATABASE_URL` e deve usar um
 banco descartável ou dedicado.
+
+O workflow de segurança executa auditoria de dependências com `pip-audit`,
+varredura de segredos com Gitleaks e atualizações semanais via Dependabot.
 
 ## Pull Requests
 
