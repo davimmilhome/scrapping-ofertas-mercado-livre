@@ -8,13 +8,15 @@ compatível com os limites do site.
 ## Segredos e configuração
 
 Defina as variáveis por um gerenciador de segredos do ambiente de execução
-(por exemplo, GitHub Actions Environments, Vault ou o secret manager do
-provedor de nuvem). Não coloque credenciais em `.env` versionado, argumentos da
-linha de comando, imagens de container ou logs.
+(por exemplo, GitHub Actions Secrets/Environments, Vault ou o secret manager do
+provedor de nuvem). No workflow do GitHub Actions, o nome esperado é
+`NEON_DATABASE_URL`, contendo uma URL PostgreSQL do Neon. Não coloque
+credenciais em `.env` versionado, argumentos da linha de comando, imagens de
+container ou logs.
 
 ```text
 APP_ENV=production
-DATABASE_URL=postgresql+psycopg://<usuario>:<senha>@<host>:5432/<banco>?sslmode=require
+DATABASE_URL=postgresql://<usuario>:<senha>@<host>/<banco>?sslmode=require
 BASE_URL=https://www.mercadolivre.com.br/ofertas
 HEADLESS=true
 PAGES=1

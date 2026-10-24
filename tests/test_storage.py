@@ -8,7 +8,12 @@ import pytest
 from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
 
-from offers_spider.storage import Repository, export_json
+from offers_spider.storage import Repository, export_json, normalize_database_url
+
+
+def test_generic_postgresql_url_uses_psycopg3():
+    url = normalize_database_url("postgresql://user:pass@db/offers")
+    assert url.drivername == "postgresql+psycopg"
 
 
 def test_daily_upsert_history_and_different_listings(tmp_path, offers):

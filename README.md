@@ -64,6 +64,25 @@ Defina `DATABASE_URL=postgresql+psycopg://usuario:senha@localhost/ofertas`.
 O banco deve existir; a aplicação cria a tabela. Caracteres especiais da senha
 devem ser codificados na URL. Credenciais ficam fora do Git.
 
+## Execução agendada no GitHub Actions com Neon
+
+O workflow [`scraper.yml`](.github/workflows/scraper.yml) executa a coleta
+diariamente às 01:17 no horário de Brasília e também pode ser disparado
+manualmente. Ele usa o PostgreSQL do Neon como banco persistente; o JSON da
+execução fica disponível como artifact por sete dias.
+
+No repositório, crie o secret `NEON_DATABASE_URL` com a URL de conexão do Neon.
+Use a URL com o driver `psycopg`, por exemplo:
+
+```text
+postgresql://usuario:senha@ep-exemplo.us-east-2.aws.neon.tech/ofertas?sslmode=require
+```
+
+Não coloque essa URL em arquivos versionados, logs ou parâmetros de linha de
+comando. A primeira execução cria a tabela `offer_snapshots` automaticamente.
+Para validar a conexão sem esperar o cron, use **Run workflow** na aba Actions
+e acompanhe o artifact e os logs da execução.
+
 ## Dados e repetição da coleta
 
 Cada oferta tem identidade extraída do link MLB. Em links de catálogo,

@@ -42,9 +42,17 @@ snapshots = Table(
 )
 
 
+def normalize_database_url(database_url: str):
+    """Use the installed psycopg 3 driver for generic PostgreSQL URLs."""
+    url = make_url(database_url)
+    if url.get_backend_name() == "postgresql" and url.drivername == "postgresql":
+        return url.set(drivername="postgresql+psycopg")
+    return url
+
+
 class Repository:
     def __init__(self, database_url: str):
-        url = make_url(database_url)
+        url = normalize_database_url(database_url)
         if url.get_backend_name() not in {"sqlite", "postgresql"}:
             raise ValueError("Banco suportado: SQLite ou PostgreSQL.")
         if url.get_backend_name() == "sqlite" and url.database not in {None, "", ":memory:"}:
