@@ -37,13 +37,17 @@ Variáveis de ambiente prevalecem sobre o arquivo `.env`; argumentos da CLI
 prevalecem sobre os valores correspondentes. Caminhos relativos são resolvidos
 a partir do diretório de execução.
 
+Em `development` e `test`, SQLite é o padrão para desenvolvimento local e testes.
+`production` rejeita SQLite e exige uma URL PostgreSQL (`postgresql+psycopg`).
+
 | Variável | Padrão | Uso |
 | --- | --- | --- |
+| APP_ENV | development | development, test, staging ou production |
 | DATABASE_URL | sqlite:///output/offers.sqlite3 | SQLite ou postgresql+psycopg |
 | OUTPUT_PATH | output/offers.json | Exportação da execução |
 | BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados |
 | PAGES | 1 | Páginas de 1 até N |
-| BROWSER | chrome | chrome ou firefox |
+| BROWSER | firefox | chrome ou firefox |
 | HEADLESS | true | false para mostrar navegador |
 | TIMEOUT | 20 | Limite de navegação e espera por cartões, em segundos |
 | RETRIES | 2 | Tentativas adicionais por página |
@@ -173,3 +177,7 @@ variável, ele é ignorado. Há um job separado de PostgreSQL na CI.
 
 Consulte [MIGRATION.md](MIGRATION.md) para mudanças no contrato, configuração
 e esquema. Nenhum histórico antigo é apagado ou migrado automaticamente.
+
+Consulte também [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) e
+[SECURITY.md](SECURITY.md) para o fluxo de contribuição, políticas do repositório
+e controles de segurança.

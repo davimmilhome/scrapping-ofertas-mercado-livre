@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Coleta ofertas do Mercado Livre.")
     parser.add_argument("--env-file", type=Path, help="Arquivo .env; padrão: ./.env")
+    parser.add_argument(
+        "--app-env",
+        choices=["development", "test", "staging", "production"],
+        help="Ambiente de execução",
+    )
     parser.add_argument("--pages", type=int, help="Número de páginas")
     parser.add_argument("--output", type=Path, help="Destino do JSON")
     parser.add_argument("--browser", choices=["chrome", "firefox"])
@@ -33,6 +38,7 @@ def main(argv=None) -> int:
         settings = Settings.from_env(args.env_file)
         changes = {}
         for argument, field in (
+            ("app_env", "app_env"),
             ("pages", "pages"),
             ("output", "output_path"),
             ("browser", "browser"),

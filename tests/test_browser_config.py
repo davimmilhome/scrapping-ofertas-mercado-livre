@@ -11,6 +11,7 @@ from offers_spider.config import Settings
 @pytest.mark.parametrize(
     "settings",
     [
+        {"app_env": "invalid"},
         {"pages": 0},
         {"timeout": 0},
         {"retries": -1},
@@ -18,6 +19,7 @@ from offers_spider.config import Settings
         {"browser": "invalid"},
         {"base_url": "file:///tmp/x"},
         {"timeout": float("nan")},
+        {"app_env": "production", "database_url": "sqlite:///output/prod.sqlite3"},
     ],
 )
 def test_invalid_configuration(settings):
@@ -66,11 +68,20 @@ def test_site_error_page_is_reported():
 
 def test_env_file_and_environment_precedence(monkeypatch, tmp_path):
     path = tmp_path / "config.env"
-    path.write_text("PAGES=3\nHEADLESS=false\nBROWSER=firefox\n", encoding="utf-8")
+    path.write_text("APP_ENV=staging\nPAGES=3\nHEADLESS=false\nBROWSER=firefox\n", encoding="utf-8")
     monkeypatch.setenv("PAGES", "5")
+    monkeypatch.delenv("APP_ENV", raising=False)
     monkeypatch.delenv("HEADLESS", raising=False)
     monkeypatch.delenv("BROWSER", raising=False)
     settings = Settings.from_env(path)
     assert settings.pages == 5
+    assert settings.app_env == "staging"
     assert not settings.headless
     assert settings.browser == "firefox"
+
+
+def test_environment_app_env_overrides_env_file(monkeypatch, tmp_path):
+    path = tmp_path / "config.env"
+    path.write_text("APP_ENV=staging\n", encoding="utf-8")
+    monkeypatch.setenv("APP_ENV", "test")
+    assert Settings.from_env(path).app_env == "test"
