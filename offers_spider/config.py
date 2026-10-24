@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 @dataclass(frozen=True)
 class Settings:
+    app_env: str = "development"
     database_url: str = "sqlite:///output/offers.sqlite3"
     output_path: Path = Path("output/offers.json")
     base_url: str = "https://www.mercadolivre.com.br/ofertas"
@@ -23,6 +24,8 @@ class Settings:
     driver_path: str | None = None
 
     def __post_init__(self):
+        if self.app_env not in {"development", "test", "staging", "production"}:
+            raise ValueError("APP_ENV deve ser development, test, staging ou production.")
         if (
             self.pages < 1
             or self.timeout <= 0
@@ -39,6 +42,10 @@ class Settings:
             raise ValueError("BASE_URL deve ser uma URL HTTP(S).")
         if not self.database_url:
             raise ValueError("DATABASE_URL não pode ser vazia.")
+        if self.app_env == "production" and self.database_url.startswith("sqlite"):
+            raise ValueError(
+                "Produção exige PostgreSQL; SQLite é permitido apenas fora de production."
+            )
 
     @classmethod
     def from_env(cls, env_file: Path | None = None):
@@ -49,6 +56,7 @@ class Settings:
         if boolean not in {"true", "false", "1", "0"}:
             raise ValueError("HEADLESS deve ser true ou false.")
         return cls(
+            app_env=os.getenv("APP_ENV", "development").lower(),
             database_url=os.getenv("DATABASE_URL", cls.database_url),
             output_path=Path(os.getenv("OUTPUT_PATH", "output/offers.json")),
             base_url=os.getenv("BASE_URL", cls.base_url),

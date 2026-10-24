@@ -62,3 +62,9 @@ def test_invalid_options_do_not_start_browser(monkeypatch, tmp_path):
     _, browser = setup_cli(monkeypatch, tmp_path, [])
     assert cli.main(["--pages", "0"]) == 1
     browser.__enter__.assert_not_called()
+
+
+def test_production_cli_override_rejects_sqlite(monkeypatch, tmp_path):
+    _, browser = setup_cli(monkeypatch, tmp_path, [])
+    assert cli.main(["--app-env", "production"]) == 1
+    browser.__enter__.assert_not_called()
