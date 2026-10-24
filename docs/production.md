@@ -17,7 +17,7 @@ container ou logs.
 ```text
 APP_ENV=production
 DATABASE_URL=postgresql://<usuario>:<senha>@<host>/<banco>?sslmode=require
-BASE_URL=https://www.mercadolivre.com.br/ofertas
+BASE_URL=https://www.mercadolivre.com.br/ofertas?isSparkleRedirect=true
 HEADLESS=true
 PAGES=1
 TIMEOUT=20
