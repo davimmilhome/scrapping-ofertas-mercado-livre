@@ -47,6 +47,9 @@ verificação manual e controlada, usando poucas páginas e respeitando os limit
 do site. O teste PostgreSQL é opt-in com `TEST_DATABASE_URL` e deve usar um
 banco descartável ou dedicado.
 
+O workflow de segurança executa auditoria de dependências com `pip-audit`,
+varredura de segredos com Gitleaks e atualizações semanais via Dependabot.
+
 ## Pull Requests
 
 O PR deve explicar:

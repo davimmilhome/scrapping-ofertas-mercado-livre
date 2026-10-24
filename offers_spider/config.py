@@ -8,6 +8,11 @@ from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
+MAX_PAGES = 100
+MAX_TIMEOUT = 300
+MAX_RETRIES = 5
+MAX_REQUEST_DELAY = 60
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -28,13 +33,20 @@ class Settings:
             raise ValueError("APP_ENV deve ser development, test, staging ou production.")
         if (
             self.pages < 1
+            or self.pages > MAX_PAGES
             or self.timeout <= 0
+            or self.timeout > MAX_TIMEOUT
             or self.retries < 0
+            or self.retries > MAX_RETRIES
             or self.request_delay < 0
+            or self.request_delay > MAX_REQUEST_DELAY
             or not math.isfinite(self.timeout)
             or not math.isfinite(self.request_delay)
         ):
-            raise ValueError("PAGES >= 1, TIMEOUT > 0, RETRIES >= 0 e REQUEST_DELAY >= 0.")
+            raise ValueError(
+                "PAGES entre 1 e 100, TIMEOUT entre 0 e 300, RETRIES entre 0 e 5 "
+                "e REQUEST_DELAY entre 0 e 60."
+            )
         if self.browser not in {"chrome", "firefox"}:
             raise ValueError("BROWSER deve ser chrome ou firefox.")
         url = urlparse(self.base_url)
@@ -42,10 +54,11 @@ class Settings:
             raise ValueError("BASE_URL deve ser uma URL HTTP(S).")
         if not self.database_url:
             raise ValueError("DATABASE_URL não pode ser vazia.")
-        if self.app_env == "production" and self.database_url.startswith("sqlite"):
-            raise ValueError(
-                "Produção exige PostgreSQL; SQLite é permitido apenas fora de production."
-            )
+        if self.app_env == "production":
+            if not self.database_url.lower().startswith("postgresql"):
+                raise ValueError("Produção exige uma URL PostgreSQL; SQLite não é permitido.")
+            if url.scheme != "https":
+                raise ValueError("Produção exige BASE_URL com HTTPS.")
 
     @classmethod
     def from_env(cls, env_file: Path | None = None):

@@ -46,12 +46,12 @@ Em `development` e `test`, SQLite é o padrão para desenvolvimento local e test
 | DATABASE_URL | sqlite:///output/offers.sqlite3 | SQLite ou postgresql+psycopg |
 | OUTPUT_PATH | output/offers.json | Exportação da execução |
 | BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados |
-| PAGES | 1 | Páginas de 1 até N |
+| PAGES | 1 | Páginas de 1 até 100 |
 | BROWSER | firefox | chrome ou firefox |
 | HEADLESS | true | false para mostrar navegador |
-| TIMEOUT | 20 | Limite de navegação e espera por cartões, em segundos |
-| RETRIES | 2 | Tentativas adicionais por página |
-| REQUEST_DELAY | 1 | Intervalo entre páginas e base do recuo entre tentativas |
+| TIMEOUT | 20 | Limite de navegação e espera por cartões, de 0 a 300 segundos |
+| RETRIES | 2 | Tentativas adicionais por página, de 0 a 5 |
+| REQUEST_DELAY | 1 | Intervalo entre páginas, de 0 a 60 segundos |
 | DRIVER_PATH | vazio | Executável chromedriver/geckodriver; não é o executável do navegador |
 
 Para PostgreSQL:
@@ -181,3 +181,5 @@ e esquema. Nenhum histórico antigo é apagado ou migrado automaticamente.
 Consulte também [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) e
 [SECURITY.md](SECURITY.md) para o fluxo de contribuição, políticas do repositório
 e controles de segurança.
+
+Para operação segura em produção, consulte [docs/production.md](docs/production.md).

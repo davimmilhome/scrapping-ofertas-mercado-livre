@@ -22,6 +22,8 @@ reprodutível, seguro e fácil de revisar.
 - Desenvolvimento usa SQLite local por padrão: `sqlite:///output/offers.sqlite3`.
 - Testes devem usar SQLite temporário ou `TEST_DATABASE_URL` em banco dedicado.
 - Produção exige PostgreSQL; nunca apontar produção para SQLite.
+- Produção exige `BASE_URL` HTTPS; limites operacionais são 100 páginas, 300
+  segundos, 5 tentativas e 60 segundos de intervalo.
 - Arquivos `.env`, bancos, JSONs de saída, logs e credenciais não entram no Git.
 - Nunca colocar tokens, senhas, cookies, headers autenticados ou dados pessoais
   em código, testes, fixtures, logs, issues ou PRs.
@@ -49,6 +51,8 @@ python -m ruff check .
 python -m ruff format --check .
 git diff --check
 ```
+
+O workflow de segurança também executa `pip-audit` e varredura de segredos.
 
 Mudanças no schema ou no contrato de saída também atualizam `README.md`,
 `MIGRATION.md` e os testes afetados.

@@ -2,9 +2,13 @@ name: Tests
 on: [push, pull_request]
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         python: ["3.11", "3.12", "3.13"]
@@ -19,6 +23,7 @@ jobs:
       - run: pytest -q
   postgres:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16

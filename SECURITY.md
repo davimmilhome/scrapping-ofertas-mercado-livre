@@ -19,6 +19,9 @@ ou abuso do site coletado.
 - Escrita JSON é atômica; gravações SQL usam transação e rollback.
 - Dependências são fixadas por faixas e verificadas na CI com testes e Ruff.
 - O workflow do GitHub Actions usa `permissions: contents: read`.
+- A CI cancela execuções antigas, impõe timeout nos jobs e valida limites de
+  configuração antes de iniciar o navegador.
+- A CI executa `pip-audit` e Gitleaks; Dependabot acompanha Python e Actions.
 - O scraper não resolve CAPTCHA nem tenta contornar autenticação, rate limit ou
   bloqueios.
 
@@ -37,20 +40,21 @@ ou abuso do site coletado.
 - A coleta deve permanecer em baixa frequência e respeitar os termos e limites
   do site.
 
-## Pendências recomendadas
+## Controles de produção
 
-1. Adicionar `pip-audit` ou Dependabot à CI para alertas de dependências.
-2. Adicionar varredura de segredos (por exemplo, Gitleaks) antes do merge.
-3. Configurar branch protection, revisão obrigatória e checks obrigatórios em
-   `develop` e `main`.
-4. Usar um gerenciador de segredos no deploy; nunca passar credenciais via CLI.
-5. Definir backup, retenção e restauração do PostgreSQL antes de produção.
-6. Avaliar isolamento do navegador e limites de CPU, memória e tempo em jobs
-   automatizados.
+As instruções executáveis de deploy, menor privilégio, TLS, backup, restauração
+e isolamento estão em [docs/production.md](docs/production.md). Ainda é
+necessário aplicar no ambiente de execução:
+
+- branch protection, revisão obrigatória e checks obrigatórios em `develop` e
+  `main`;
+- um gerenciador de segredos, PostgreSQL com TLS, backups e testes de restauração;
+- usuário de sistema sem privilégios e limites de CPU, memória e tempo.
 
 ## Relato privado
 
-Como o repositório não possui um canal privado de segurança configurado, envie
-um relato privado ao mantenedor antes de abrir uma issue pública. Inclua impacto,
-passos de reprodução mínimos, versão/commit afetado e uma correção sugerida,
-sem anexar segredos reais.
+Use o [GitHub Security Advisory privado](https://github.com/davimmilhome/scrapping-ofertas-mercado-livre/security/advisories/new)
+quando estiver habilitado. Se o GitHub não apresentar esse formulário, envie
+uma mensagem privada ao mantenedor antes de abrir uma issue pública. Inclua
+impacto, passos de reprodução mínimos, versão/commit afetado e uma correção
+sugerida, sem anexar segredos reais.
