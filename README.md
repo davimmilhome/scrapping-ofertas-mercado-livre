@@ -83,6 +83,10 @@ comando. A primeira execução cria a tabela `offer_snapshots` automaticamente.
 Para validar a conexão sem esperar o cron, use **Run workflow** na aba Actions
 e acompanhe o artifact e os logs da execução.
 
+O scraper usa um runner auto-hospedado com a etiqueta `offers-spider`, porque os
+runners públicos do GitHub são bloqueados pelo Mercado Livre. O cadastro e o
+checklist de segurança estão em [docs/self-hosted-runner.md](docs/self-hosted-runner.md).
+
 ## Dados e repetição da coleta
 
 Cada oferta tem identidade extraída do link MLB. Em links de catálogo,

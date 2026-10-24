@@ -21,7 +21,9 @@ concurrency:
 
 jobs:
   collect:
-    runs-on: ubuntu-latest
+    # A coleta precisa sair pela rede onde o Mercado Livre é acessível.
+    # O runner auto-hospedado mantém o Actions como agendador e executor.
+    runs-on: [self-hosted, offers-spider]
     timeout-minutes: 20
     env:
       APP_ENV: production
