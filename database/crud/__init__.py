@@ -1,3 +1,0 @@
-from .offers_operations import OfferOperations
-from .product_operations import ProductOperations
-from .store_operations import StoreOperations

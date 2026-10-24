@@ -1,20 +1,6 @@
-from cfg import LoggingConfig
+"""Compatibilidade: python main.py usa a CLI do pacote."""
 
-from scrappers import MLScrapper
-
-from utils import TimeUtils
-
-LoggingConfig.default_setup_logging(
-    file_handler_path="logs/main.log",
-    file_handler_mode="a",
-)
-
-logger = LoggingConfig.get_logger(logger__name__=__name__)
-
-ddmmyy_date = TimeUtils.get_current_ddmmyy_date()
-ML_filename = "ML" + "_" + ddmmyy_date + "_"
-
+from offers_spider.cli import main
 
 if __name__ == "__main__":
-    # MLScrapper.ML_offer_pages_scrapper(output_path=f"output/{ML_filename}offers.json")
-    pass
+    raise SystemExit(main())
