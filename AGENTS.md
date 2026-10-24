@@ -38,7 +38,7 @@ reprodutível, seguro e fácil de revisar.
   Conventional Commits.
 - Toda mudança deve entrar por Pull Request para `develop`.
 - O PR precisa descrever comportamento, riscos, migração e validação.
-- Só fazer merge com CI verde e revisão concluída. Releases seguem de
+- Só fazer merge com CI verde e revisão concluída quando houver outro revisor disponível. Em um repositório solo, o PR e os checks obrigatórios permanecem exigidos. Releases seguem de
   `develop` para `main` por PR separado.
 
 ## Qualidade obrigatória

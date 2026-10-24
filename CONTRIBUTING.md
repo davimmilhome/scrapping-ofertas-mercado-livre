@@ -10,7 +10,7 @@ O projeto usa GitFlow simplificado:
 3. Faça commits pequenos, com mensagens no padrão Conventional Commits.
 4. Execute a suíte local e revise o diff.
 5. Abra um Pull Request da branch para `develop`.
-6. Aguarde CI verde e revisão; corrija os comentários na mesma branch.
+6. Aguarde CI verde e revisão quando houver outro revisor disponível; corrija os comentários na mesma branch.
 7. Faça merge pelo GitHub. Não faça push direto em `develop`.
 
 `main` recebe apenas PRs de release ou hotfix aprovados. Branches de trabalho

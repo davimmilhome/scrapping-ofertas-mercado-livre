@@ -46,7 +46,7 @@ As instruções executáveis de deploy, menor privilégio, TLS, backup, restaura
 e isolamento estão em [docs/production.md](docs/production.md). O GitHub já está
 protegido em `develop` e `main` com:
 
-- PR obrigatório com uma aprovação de usuário com permissão de escrita;
+- PR obrigatório; revisão humana é recomendada quando houver outro mantenedor disponível;
 - checks `test (3.11)`, `test (3.12)`, `test (3.13)`, `dependency-audit` e
   `secret-scan`;
 - resolução de conversas e proibição de bypass, force push e exclusão.
