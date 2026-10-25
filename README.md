@@ -45,7 +45,7 @@ Em `development` e `test`, SQLite é o padrão para desenvolvimento local e test
 | APP_ENV | development | development, test, staging ou production |
 | DATABASE_URL | sqlite:///output/offers.sqlite3 | SQLite ou postgresql+psycopg |
 | OUTPUT_PATH | output/offers.json | Exportação da execução |
-| BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados. Em produção, a Action usa a variante `?isSparkleRedirect=true` para reduzir respostas de erro de IPs de datacenter. |
+| BASE_URL | https://www.mercadolivre.com.br/ofertas | Página base; filtros existentes são preservados. O job Cloudflare usa a variante `?isSparkleRedirect=true` por padrão. |
 | PAGES | 1 | Páginas de 1 até 100 |
 | BROWSER | firefox | chrome ou firefox |
 | HEADLESS | true | false para mostrar navegador |
@@ -66,28 +66,45 @@ Defina `DATABASE_URL=postgresql+psycopg://usuario:senha@localhost/ofertas`.
 O banco deve existir; a aplicação cria a tabela. Caracteres especiais da senha
 devem ser codificados na URL. Credenciais ficam fora do Git.
 
-## Execução agendada no GitHub Actions com Neon
+## Execução agendada no Cloudflare Browser com Neon
 
-O workflow [`scraper.yml`](.github/workflows/scraper.yml) executa a coleta
-diariamente às 01:17 no horário de Brasília e também pode ser disparado
-manualmente. Ele usa o PostgreSQL do Neon como banco persistente; o JSON da
-execução fica disponível como artifact por sete dias.
+A execução de produção fica em [`cloudflare/`](cloudflare/). O Worker usa
+Browser Run com Puppeteer e o driver serverless do Neon; o Cron Trigger dispara
+diariamente às 04:17 UTC (01:17 em Brasília). O job grava ofertas e métricas em
+`offer_snapshots` e `collection_runs`; não há artifact local nem dependência do
+GitHub Actions para executar a coleta.
 
-No repositório, crie o secret `NEON_DATABASE_URL` com a URL de conexão do Neon.
-Use a URL com o driver `psycopg`, por exemplo:
+O Cloudflare usa variáveis públicas no `cloudflare/wrangler.jsonc` e segredos
+armazenados separadamente. Configure a URL do banco com:
 
 ```text
-postgresql://usuario:senha@ep-exemplo.us-east-2.aws.neon.tech/ofertas?sslmode=require
+cd cloudflare
+npm install
+npx wrangler secret put DATABASE_URL
+npx wrangler secret put MANUAL_TOKEN
+npm run deploy
 ```
 
-Não coloque essa URL em arquivos versionados, logs ou parâmetros de linha de
-comando. A primeira execução cria as tabelas `offer_snapshots` e
-`collection_runs` automaticamente. `collection_runs` guarda métricas
-operacionais (status, duração, páginas, ofertas e falha resumida), sem HTML,
-cookies, tokens ou dados pessoais. Registros antigos seguem
-`LOG_RETENTION_DAYS`.
-Para validar a conexão sem esperar o cron, use **Run workflow** na aba Actions
-e acompanhe o artifact e os logs da execução.
+Não coloque a URL em arquivos versionados, logs ou parâmetros de linha de
+comando. A primeira execução cria as tabelas automaticamente; o SQL de referência
+está em [`cloudflare/schema.sql`](cloudflare/schema.sql). Depois do bootstrap,
+reduza as permissões do usuário do Worker conforme [docs/production.md](docs/production.md).
+
+Para uma execução manual, envie `POST /run` com `Authorization: Bearer <MANUAL_TOKEN>`.
+Essa rota existe apenas para diagnóstico e não aceita chamadas sem o segredo.
+O Worker registra somente contagens, duração, status e uma mensagem de erro
+curta, sem HTML, cookies, tokens ou dados pessoais. O painel do Cloudflare pode
+ser usado para consultar os logs do próprio Worker, sem outro serviço de
+observabilidade.
+
+O diretório também pode ser executado localmente com `npm run dev`; use o
+arquivo não versionado `.dev.vars` baseado em
+ [`cloudflare/.dev.vars.example`](cloudflare/.dev.vars.example). O teste do
+cron local usa a rota `/cdn-cgi/local/scheduled` do Wrangler.
+
+`SCHEMA_BOOTSTRAP=true` fica configurado apenas para a primeira implantação.
+Depois de confirmar as tabelas, altere-o para `false` e faça um novo deploy antes
+de revogar `CREATE` no schema do usuário da aplicação.
 
 ## Dados e repetição da coleta
 
@@ -195,7 +212,9 @@ pre-commit install
 Os testes padrão não acessam a internet nem abrem navegador. Cobrem preços,
 identidade, cartões inválidos, tentativas, encerramento, configuração,
 deduplicação, histórico, rollback, exportação e CLI integrada com SQLite.
-O GitHub Actions executa testes, lint e formatação em Python 3.11–3.13.
+Os workflows `ci.yml` e `security.yml` continuam executando testes, lint,
+formatação, auditoria de dependências Python/Node e varredura de segredos em Pull Requests.
+Eles validam o código, mas não executam o scraper de produção.
 
 Para integração PostgreSQL, use **um banco de testes dedicado** e defina
 `TEST_DATABASE_URL`. O teste prepara a tabela se necessário, insere registros

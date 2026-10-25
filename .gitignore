@@ -21,3 +21,6 @@ output/*
 *.sqlite3-*
 *.exe
 se-metadata.json
+cloudflare/node_modules/
+cloudflare/.dev.vars
+cloudflare/.wrangler/

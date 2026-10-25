@@ -18,10 +18,12 @@ ou abuso do site coletado.
 - Parser valida esquemas HTTP(S), identidade do anúncio e valores monetários.
 - Escrita JSON é atômica; gravações SQL usam transação e rollback.
 - Dependências são fixadas por faixas e verificadas na CI com testes e Ruff.
-- O workflow do GitHub Actions usa `permissions: contents: read`.
-- A CI cancela execuções antigas, impõe timeout nos jobs e valida limites de
-  configuração antes de iniciar o navegador.
-- A CI executa `pip-audit` e Gitleaks; Dependabot acompanha Python e Actions.
+- Os workflows de CI usam permissões mínimas, cancelam execuções antigas,
+  impõem timeout e validam limites antes de iniciar testes.
+- A produção roda em um Worker Cloudflare com Browser binding; `DATABASE_URL` e
+  `MANUAL_TOKEN` são secrets do Wrangler e o endpoint manual exige Bearer token.
+- A CI executa `pip-audit`, `npm audit` e Gitleaks; Dependabot acompanha Python,
+  Node e Actions.
 - O scraper não resolve CAPTCHA nem tenta contornar autenticação, rate limit ou
   bloqueios.
 
@@ -53,8 +55,10 @@ protegido em `develop` e `main` com:
 
 Ainda é necessário aplicar no ambiente de execução:
 
-- um gerenciador de segredos, PostgreSQL com TLS, backups e testes de restauração;
-- usuário de sistema sem privilégios e limites de CPU, memória e tempo.
+- secrets do Wrangler, PostgreSQL com TLS, backups e testes de restauração;
+- plano Cloudflare compatível com o orçamento diário de Browser Run e limite de
+  páginas/tempo conservador;
+- usuário do banco sem privilégios de criação depois do bootstrap.
 
 ## Relato privado
 

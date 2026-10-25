@@ -1,5 +1,25 @@
 # Migração para 0.2
 
+## Migração do executor para Cloudflare Browser
+
+A coleta agendada foi removida do GitHub Actions. O executor de produção agora
+fica em `cloudflare/`, com Browser Run, Cron Trigger e conexão serverless com o
+Neon. Os workflows de CI e segurança permanecem como validação de Pull Requests.
+
+Para migrar:
+
+1. Crie o Worker com `npm install` e `npm run deploy` dentro de `cloudflare/`.
+2. Cadastre `DATABASE_URL` e `MANUAL_TOKEN` com `wrangler secret put`.
+3. Confirme o primeiro `POST /run` autenticado e valide `collection_runs` no Neon.
+4. Depois do bootstrap, aplique as permissões de menor privilégio descritas em
+   `docs/production.md`.
+5. Remova o secret antigo `NEON_DATABASE_URL` das configurações do repositório
+   depois de confirmar que o Worker está coletando.
+
+O Worker mantém o mesmo contrato das tabelas Python. A tabela de referência e
+o SQL inicial estão em `cloudflare/schema.sql`; não há remoção automática de
+histórico.
+
 ## Registro de execuções e limite de tempo
 
 A partir desta versão, a inicialização cria a tabela `collection_runs` junto
