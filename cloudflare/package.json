@@ -9,12 +9,17 @@
     "test": "node --experimental-strip-types --test src/*.test.ts"
   },
   "dependencies": {
-    "@cloudflare/puppeteer": "^1.1.0",
+    "@cloudflare/puppeteer": "^1.4.0",
     "@neondatabase/serverless": "^1.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261024.1",
     "typescript": "^5.7.3",
-    "wrangler": "^4.139.0"
+    "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "@puppeteer/browsers": "3.2.6",
+    "basic-ftp": "6.2.3",
+    "undici": "7.30.1"
   }
 }
