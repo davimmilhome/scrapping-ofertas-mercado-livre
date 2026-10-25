@@ -1,5 +1,5 @@
 import puppeteer from "@cloudflare/puppeteer";
-import { neon } from "@neondatabase/serverless";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import type { RawCard } from "./parser";
 import { parseCards } from "./parser";
 
@@ -34,6 +34,8 @@ type Summary = {
   durationSeconds: number;
 };
 
+type Sql = NeonQueryFunction<false, false>;
+
 function numberSetting(raw: string | undefined, fallback: number, min: number, max: number): number {
   const value = Number(raw ?? fallback);
   if (!Number.isFinite(value) || value < min || value > max) {
@@ -64,7 +66,7 @@ function pageUrl(baseUrl: string, page: number): string {
   return url.toString();
 }
 
-async function ensureSchema(sql: ReturnType<typeof neon>): Promise<void> {
+async function ensureSchema(sql: Sql): Promise<void> {
   await sql`CREATE TABLE IF NOT EXISTS offer_snapshots (
     id BIGSERIAL PRIMARY KEY,
     marketplace VARCHAR(64) NOT NULL,
@@ -97,7 +99,7 @@ async function ensureSchema(sql: ReturnType<typeof neon>): Promise<void> {
   )`;
 }
 
-async function pruneRuns(sql: ReturnType<typeof neon>, retentionDays: number): Promise<void> {
+async function pruneRuns(sql: Sql, retentionDays: number): Promise<void> {
   await sql`
     DELETE FROM collection_runs
     WHERE finished_at < NOW() - (${retentionDays} * INTERVAL '1 day')
@@ -111,7 +113,7 @@ async function pruneRuns(sql: ReturnType<typeof neon>, retentionDays: number): P
 }
 
 async function saveOffers(
-  sql: ReturnType<typeof neon>,
+  sql: Sql,
   offers: ReturnType<typeof parseCards>["offers"],
   collectedAt: string,
 ): Promise<void> {
@@ -170,7 +172,7 @@ async function extractCards(page: BrowserPage): Promise<RawCard[]> {
       const fallbackCurrent =
         current.fraction
           ? undefined
-          : [...card.querySelectorAll(".andes-money-amount")].find(
+          : Array.from(card.querySelectorAll(".andes-money-amount")).find(
               (amount) => !amount.closest("s") && !amount.classList.contains("andes-money-amount--previous"),
             );
       const fallback: MoneyParts = fallbackCurrent
