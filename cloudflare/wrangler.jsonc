@@ -11,7 +11,7 @@
     "crons": ["17 4 * * *"]
   },
   "vars": {
-    "BASE_URL": "https://www.mercadolivre.com.br/ofertas?isSparkleRedirect=true",
+    "BASE_URL": "https://www.mercadolivre.com.br/ofertas",
     "PAGES": "1",
     "PAGE_TIMEOUT_SECONDS": "20",
     "MAX_RUNTIME_SECONDS": "300",

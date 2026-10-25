@@ -238,10 +238,11 @@ async function run(env: Env): Promise<Summary> {
   await pruneRuns(sql, settings.retentionDays);
   await sql`
     INSERT INTO collection_runs
-      (run_id, status, app_env, runner, started_at, max_duration_seconds, pages_requested)
+      (run_id, status, app_env, runner, started_at, max_duration_seconds, pages_requested,
+       pages_ok, offers_found, failures_count, rejected_count)
     VALUES
       (${runId}, 'running', 'production', 'cloudflare-browser', ${startedIso},
-       ${settings.maxRuntimeSeconds}, ${settings.pages})
+       ${settings.maxRuntimeSeconds}, ${settings.pages}, 0, 0, 0, 0)
   `;
 
   let browser: Awaited<ReturnType<typeof puppeteer.launch>> | undefined;
