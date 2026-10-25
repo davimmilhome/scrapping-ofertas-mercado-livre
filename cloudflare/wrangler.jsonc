@@ -18,6 +18,6 @@
     "REQUEST_DELAY_SECONDS": "1",
     "RETRIES": "2",
     "LOG_RETENTION_DAYS": "30",
-    "SCHEMA_BOOTSTRAP": "true"
+    "SCHEMA_BOOTSTRAP": "false"
   }
 }
