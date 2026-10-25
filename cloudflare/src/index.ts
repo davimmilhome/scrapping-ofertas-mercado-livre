@@ -143,11 +143,24 @@ type BrowserPage = Awaited<ReturnType<Awaited<ReturnType<typeof puppeteer.launch
 
 async function extractCards(page: BrowserPage): Promise<RawCard[]> {
   return page.$$eval(CARD_SELECTOR, (elements, selector) => {
-    const cards = elements.filter((element) => !element.querySelector(selector));
+    // The browser binding supplies the DOM objects at runtime, while the
+    // Workers type package intentionally does not include the browser DOM lib.
+    // Keep this boundary structural so the Worker build does not mix DOM and
+    // Web Worker globals.
+    type DomNode = {
+      classList: { contains(className: string): boolean };
+      closest(selectors: string): DomNode | null;
+      href?: string;
+      querySelector(selectors: string): DomNode | null;
+      querySelectorAll(selectors: string): DomNode[];
+      textContent?: string | null;
+    };
+    const nodes = elements as unknown as DomNode[];
+    const cards = nodes.filter((element) => !element.querySelector(selector));
     type MoneyParts = { fraction?: string; cents?: string };
-    const text = (root: Element, selectors: string): string | undefined =>
+    const text = (root: DomNode, selectors: string): string | undefined =>
       root.querySelector(selectors)?.textContent?.replace(/\s+/g, " ").trim() || undefined;
-    const money = (root: Element, selectors: string): MoneyParts => {
+    const money = (root: DomNode, selectors: string): MoneyParts => {
       const amount = root.querySelector(selectors);
       if (!amount) return {};
       return {
@@ -162,7 +175,7 @@ async function extractCards(page: BrowserPage): Promise<RawCard[]> {
           ".andes-money-amount-combo__main-container .andes-money-amount",
       );
       const previous = money(card, "s.andes-money-amount, .andes-money-amount--previous");
-      const link = card.querySelector<HTMLAnchorElement>(
+      const link = card.querySelector(
         "a.poly-component__title, a.promotion-item__link-container, a.ui-search-link",
       );
       const title = text(
