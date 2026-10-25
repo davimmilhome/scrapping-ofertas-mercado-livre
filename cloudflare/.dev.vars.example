@@ -1,0 +1,2 @@
+DATABASE_URL="postgresql://usuario:senha@host.neon.tech/ofertas?sslmode=require"
+MANUAL_TOKEN="gere-um-token-longo-e-fora-do-git"

@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "offers-spider",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "triggers": {
+    "crons": ["17 4 * * *"]
+  },
+  "vars": {
+    "BASE_URL": "https://www.mercadolivre.com.br/ofertas?isSparkleRedirect=true",
+    "PAGES": "1",
+    "PAGE_TIMEOUT_SECONDS": "20",
+    "MAX_RUNTIME_SECONDS": "300",
+    "REQUEST_DELAY_SECONDS": "1",
+    "RETRIES": "2",
+    "LOG_RETENTION_DAYS": "30",
+    "SCHEMA_BOOTSTRAP": "true"
+  }
+}

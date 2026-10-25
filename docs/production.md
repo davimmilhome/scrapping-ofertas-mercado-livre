@@ -7,25 +7,28 @@ compatível com os limites do site.
 
 ## Segredos e configuração
 
-Defina as variáveis por um gerenciador de segredos do ambiente de execução
-(por exemplo, GitHub Actions Secrets/Environments, Vault ou o secret manager do
-provedor de nuvem). No workflow do GitHub Actions, o nome esperado é
-`NEON_DATABASE_URL`, contendo uma URL PostgreSQL do Neon. Não coloque
-credenciais em `.env` versionado, argumentos da linha de comando, imagens de
-container ou logs.
+Defina as variáveis por um gerenciador de segredos do ambiente de execução. No
+Worker Cloudflare, use `wrangler secret put DATABASE_URL` e
+`wrangler secret put MANUAL_TOKEN`; não coloque credenciais em `.env`
+versionado, argumentos da linha de comando, imagens de container ou logs.
 
 ```text
-APP_ENV=production
 DATABASE_URL=postgresql://<usuario>:<senha>@<host>/<banco>?sslmode=require
 BASE_URL=https://www.mercadolivre.com.br/ofertas?isSparkleRedirect=true
-HEADLESS=true
 PAGES=1
-TIMEOUT=20
+PAGE_TIMEOUT_SECONDS=20
 RETRIES=2
-REQUEST_DELAY=1
-MAX_RUNTIME=300
+REQUEST_DELAY_SECONDS=1
+MAX_RUNTIME_SECONDS=300
 LOG_RETENTION_DAYS=30
 ```
+
+O arquivo `cloudflare/wrangler.jsonc` mantém os valores operacionais não
+secretos. O cron é interpretado em UTC; `17 4 * * *` corresponde a 01:17 em
+Brasília. O plano gratuito do Browser Run limita o uso a 10 minutos de
+navegador por dia, portanto mantenha uma execução curta e uma página por padrão.
+`SCHEMA_BOOTSTRAP=true` deve ser usado apenas na primeira execução; altere para
+`false`, faça novo deploy e só então remova a permissão `CREATE` do usuário.
 
 `APP_ENV=production` exige PostgreSQL e HTTPS. Rotacione a senha do banco e os
 segredos do ambiente conforme a política da organização.
@@ -33,9 +36,10 @@ segredos do ambiente conforme a política da organização.
 ## Banco e menor privilégio
 
 Use um banco dedicado e um usuário da aplicação sem permissão de superusuário.
-Como a versão atual cria a tabela na inicialização, o bootstrap pode conceder
-`CREATE` no schema; depois que a tabela existir, remova essa permissão e use um
-usuário separado para futuras migrações.
+Na primeira implantação, `SCHEMA_BOOTSTRAP=true` cria as tabelas e exige
+`CREATE` no schema. Depois que a tabela existir, altere a variável para `false`,
+faça novo deploy, remova essa permissão e use um usuário separado para futuras
+migrações.
 
 ```sql
 GRANT CONNECT ON DATABASE <banco> TO <usuario_app>;
@@ -64,13 +68,32 @@ Nunca inclua a URL com senha em logs; use a variável injetada pelo secret manag
 
 ## Isolamento do job
 
-- Execute com usuário do sistema sem privilégios e filesystem de saída dedicado.
-- Aplique timeout do orquestrador maior que o limite de uma execução e encerre
-  processos Selenium órfãos.
-- Restrinja egress quando possível; o navegador deve acessar apenas os domínios
-  necessários para a coleta.
+- O Worker não tem filesystem persistente; o navegador é fechado no `finally` e
+  o job tem limite lógico de 300 segundos.
+- Restrinja as chamadas do endpoint manual ao `MANUAL_TOKEN`; o cron não fica
+  exposto como endpoint público.
+- O navegador deve acessar apenas os domínios necessários para a coleta e não
+  usa proxy residencial, stealth, solução de CAPTCHA ou qualquer contorno de
+  bloqueio.
 - Monitore falhas, tempo de execução, volume de ofertas e crescimento do banco.
+
+## Checklist antes da hospedagem
+
+- Conta Cloudflare com Workers e Browser Run habilitados para o plano escolhido.
+- Wrangler autenticado na conta correta, com o nome do Worker revisado antes de
+  `npm run deploy`.
+- `DATABASE_URL` apontando para o projeto Neon correto, com TLS e usuário
+  dedicado; `MANUAL_TOKEN` gerado fora do Git.
+- Primeiro deploy com `SCHEMA_BOOTSTRAP=true`, uma execução manual autenticada
+  e conferência de `collection_runs` e `offer_snapshots` no Neon.
+- Segundo deploy com `SCHEMA_BOOTSTRAP=false`, seguido da remoção de `CREATE` no
+  schema e da exclusão do secret legado `NEON_DATABASE_URL` no GitHub.
+- Cron conferido em UTC, uma página por execução e orçamento de navegador dentro
+  do plano contratado.
+- Backup do Neon e restauração de teste definidos antes de considerar o job
+  operacional.
 
 As métricas operacionais ficam na tabela `collection_runs`, sem HTML, cookies ou
 credenciais. `LOG_RETENTION_DAYS` limita o crescimento dessa tabela e
-`MAX_RUNTIME` encerra a paginação quando o orçamento de execução é atingido.
+`MAX_RUNTIME` (Python) ou `MAX_RUNTIME_SECONDS` (Worker) encerra a paginação
+quando o orçamento de execução é atingido.
